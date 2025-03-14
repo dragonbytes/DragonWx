@@ -112,6 +112,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\TekTodd\source\repos\DragonWx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,12 +133,18 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\TekTodd\source\repos\DragonWx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="DragonWx.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DragonWx.h" />
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="WxCodeDefs.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="olcPGEX_SplashScreen.h" />
     <ClInclude Include="olcPGEX_TTF-main\olcPGEX_TTF.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
