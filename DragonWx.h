@@ -1,16 +1,10 @@
 #pragma once
 
-#define OLC_PGE_APPLICATION
-#include "olcPixelGameEngine.h"
+#include "Globals.h"
 
-#define OLC_PGEX_TTF
-#include "./olcPGEX_TTF-main/olcPGEX_TTF.h"
-
-#define OLC_PGEX_SPLASHSCREEN
+#ifndef _DEBUG
 #include "olcPGEX_SplashScreen.h"
-
-#include "Main.h"
-#include "WxCodeDefs.h"
+#endif
 
 class DragonWx : public olc::PixelGameEngine
 {
@@ -20,150 +14,229 @@ public:
 	bool OnUserCreate() override;
 	bool OnUserUpdate(float fElapsedTime) override;
 	bool OnUserDestroy() override;
+	void OnTextEntryComplete(const std::string&) override;
 
-	bool mouseWithinArea(olc::vf2d, olc::vf2d, olc::vf2d);
-	olc::vf2d GetCenteredStartPosition(olc::vf2d totalAreaSize, olc::vf2d objectAreaSize);
-	std::u32string ConvertedString32(std::string inputString);
-	olc::vf2d GetTextOffsetPosition(olc::vf2d startPos, olc::Font* fontToUse, std::string inputString);
-	olc::vf2d GetTextOffsetPosition32(olc::vf2d startPos, olc::Font* fontToUse, std::u32string inputString32);
-	void RenderString(std::string inputString, olc::Font* fontToUse, olc::Pixel textColor, olc::Renderable* renderable, olc::vf2d leftPos);
-	void RenderString32(std::u32string inputString32, olc::Font* fontToUse, olc::Pixel textColor, olc::Renderable* renderable, olc::vf2d leftPos);
-	void RenderStringCentered(std::string inputString, olc::Font* fontToUse, olc::Pixel textColor, olc::Renderable* renderable, olc::vf2d centerPos);
-	void RenderStringRightJustified(std::string inputString, olc::Font* fontToUse, olc::Pixel textColor, olc::Renderable* renderable, olc::vf2d rightPos);
-	void RenderHighOrLowValue(std::string labelText, double highLowValue, olc::Renderable* renderableValue, olc::vf2d valuePos, bool useSmallerText);
-	void DrawWindDirectionArrow(double degreesBearing, olc::Pixel arrowColor);
-	void DrawCircleArc(olc::vf2d startPos, int radius, double startAngle, double endAngle, olc::Pixel pixelColor);
+	bool mouseWithinArea(olc::vf2d, olc::vf2d) const;
+	bool mouseClickedInputBox(inputBoxStruct*) const;
+	void ActivateInputBox(inputBoxStruct*);
+	bool PasteTextFromClipboard();
+	bool isWhiteSpaceOnly(const std::string&);
+	olc::vi2d StringPixelSize(olc::Font&, std::u32string&);
+	olc::vi2d GetCenteredStartPosition(olc::vi2d, olc::vi2d);
+	std::u32string ConvertedString32(std::string);
+	olc::vi2d TextCenteredOffsetY(std::string, olc::Font*);
+	//std::u32string BoxResultVariableAsString32(inputBoxStruct*);
+	void RenderString(std::string, olc::Font*, olc::Pixel, textObject*, olc::vi2d);
+	void RenderString32(std::u32string, olc::Font*, olc::Pixel, textObject*, olc::vi2d, bool);
+	void RenderString32(std::u32string, olc::Font*, olc::Pixel, textObject*, olc::vi2d);
+	olc::vi2d RenderStringSegment(std::string, olc::Font*, olc::Pixel, textObject*, olc::vi2d, int spaceWidth);
+	void RenderStringCentered(std::string, olc::Font*, olc::Pixel, textObject*, olc::vi2d);
+	void RenderStringRightJustified(std::string, olc::Font*, olc::Pixel, textObject*, olc::vi2d);
+	void RenderHighOrLowValue(std::string, double, textObject*, olc::vf2d, bool);
+	void DrawWindDirectionArrow(double, olc::Pixel);
+	void DrawCircleArc(olc::vf2d, int, double, double, olc::Pixel);
 	//void DrawWindDirPreviousArc(olc::vf2d startPos, int radius, olc::Pixel pixelColor, uint8_t mask);
-	olc::vf2d DrawBoxTitle(std::u32string strSectionTitle, olc::Font* fontToUse, olc::vi2d posUpperLeft, olc::vi2d rectSize, int radius, olc::Pixel pixelColor);
-	void DrawRainGauge(double gaugeFullValue, olc::vi2d posUpperLeft, olc::vi2d rectSize, int radius, olc::Pixel pixelColor);
-	void DrawUVindexGraph(olc::vf2d startPos, std::u32string strValue);
-	void RenderCenteredWxCondition(olc::vf2d centeredPos, olc::Decal* decalToDraw, olc::Renderable* renderable);
-	void RenderCenteredWxForecast(olc::vf2d centeredPos, olc::Decal* decalToDraw, wxWebEntry* wxWebEntryPtr, olc::Renderable* renderableText);
-	olc::Decal* UpdateTrendData(std::deque<double>* sourceDeque, double dataValue, olc::Decal* decalTarget, std::string debugTextLabel);
-	std::string GetWindDirectionName(double windDirDegrees);
+	void DrawBoxTitle(titleBox* titleBoxPtr, olc::Renderable*);
+	void DrawRainGaugeOutlines(olc::vi2d, olc::vi2d, int, olc::Pixel);
+	void RenderRainGaugeText();
+	void DrawUVindexGraph(olc::vf2d, std::u32string strValue);
+	void RenderButton(buttonStruct*);
+	void RenderButton(buttonStruct*, std::string);
+	void RenderButtonWithEnabler(buttonStruct*);
+	void RenderInputBox(inputBoxStruct*, olc::Font* fontToUse, olc::Pixel textColor);
+	void ShowCenteredDialogBox(dialogBox*);
+	void RenderCenteredWxCondition(olc::vf2d, olc::Decal*, textObject*);
+	void RenderCenteredWxForecast(olc::vf2d, olc::Decal*, wxWebEntry*, textObject*);
+	void UpdateAreaBordersSprite();
+	olc::Decal* UpdateTrendData(std::deque<float>* sourceDeque, float dataValue, olc::Decal*, std::string) const;
+	std::string GetWindDirectionName(double);
+	bool NextWindDirAnimationPoint(float& currentValue, float targetValue, float& currentVelocity, float& timeSinceLastUpdate, float fElapsedTimePGE);
+	float NormalizedAngle(float angle);
+	float shortest_angle_diff(float from, float to);
+	float update_weather_vane_spring(float current, float target, float& velocity, float stiffness, float damping, float dt);
+	float update_weather_vane(float current, float target, float& velocity, float max_speed, float acceleration, float dt);
 	void MidnightDailyReset();
-	bool LoadWebWxAssets(wxWebEntry* wxDataEntry, olc::Decal* decalTarget);
-	bool SaveConfigFile();
+	bool LoadWebWxAssets(wxWebEntry*, olc::Decal*);
+	//bool SaveConfigFile();
 
-	//olc::SplashScreen splash;
+	#ifndef _DEBUG
+	olc::SplashScreen splash;
+	#endif
 
-	bool mouseWaitingButtonRelease, useFeelsLikeLabel, useLuxValue;
+	enum inputBoxType
+	{
+		BOOL, INT, FLOAT, STRING
+	};
+
+	inputBoxStruct inputBoxOutdoorID, inputBoxIndoorID, inputBoxLatitude, inputBoxLongitude, inputBoxSdrExecPath, inputBoxSdrParams, inputBoxSdrGain;
+	inputBoxStruct inputBoxOutdoorCalTemp, inputBoxIndoorCalTemp, inputBoxOutdoorCalHumidity, inputBoxIndoorCalHumidity;
+	inputBoxStruct* setupActiveInputBoxPtr;
+
+	buttonStruct buttonUnitsToggle, buttonForecastOnOff, buttonResetStats, buttonAboutApp, buttonStartStopRTL433, buttonOk, buttonCancel;
+
+	dialogBox dialogBoxFailedExecCmd, dialogBoxNoValidConfig, dialogBoxInvalidValue, dialogBoxRestartRequired;
+
+	float restartPendingElapsed = 0.0f;
+	int minuteTimeCounter = 0;		// This allows me to use single 15 second interval to also handle events once per minute
+	int secondsCounter30 = 0;		// This allows me to use single 15 second interval to also handle events once per 30 seconds
+	float cursorBlinkElapsedTime = 0.0f;
+	int setupActiveInputBoxID = -1;
+
+	olc::vi2d positionMouseCursor;
+	bool setupUseMetricUnits, setupWebWxEnabled;
+	bool pendingRestartRTL433 = false, mouseWaitingButtonRelease, textCursorBlinkState, useFeelsLikeLabel, useLuxValue, useNumericWindDirection;
+	bool dialogBoxInForeground = false, restartMsgInForeground = false;
 	olc::Key keyPrevious;
-	std::string strDewpointLabel = "Dewpoint";
 
-	std::u32string strPanelNameOutdoor32 = U"Outdoor";
-	std::u32string strPanelNameIndoor32 = U"Indoor";
-	std::u32string strPanelNameSensors32 = U"Sensors";
-	std::u32string strPanelNameRainfall32 = U"Rainfall";
-	std::u32string strPanelNameConditions32 = U"Forecast";
+	std::string strClipboardContents;
+	std::u32string strFeelsLikeLabel;
+	temperatureUnitsStruct degreeUnits;
+	windSpeedUnitsStruct windSpeedUnits;
+	rainfallUnitsStruct rainfallUnits;
 
-	int spriteLayers[3];
+	titleBox titleBoxOutdoorPanel, titleBoxIndoorPanel, titleBoxSensorPanel, titleBoxRainPanel, titleBoxForecastPanel, titleBoxAboutApp;
+	titleBox titleBoxSetupOutdoor, titleBoxSetupIndoor;
 
 	olc::Pixel colorLabelText;
 	olc::Pixel rainGaugeBorderColor;
 	olc::Pixel areasBorderColor;
 
-	olc::Sprite* backgroundSprite;
-	olc::Decal* backgroundDecal;
-	olc::Sprite* backgroundAlphaSprite;
-	olc::Decal* backgroundAlphaDecal;
-	olc::Sprite* spriteSettingsScreen;
-	olc::Decal* decalSettingsScreen;
-	olc::Sprite* spriteSettingsIcon;
-	olc::Decal* decalSettingsIcon;
+	olc::Sprite* previousDrawTarget;
 
-	olc::Sprite* spriteThermometer;
-	olc::Decal* decalThermometer;
-	olc::Sprite* spriteWaterDrop;
-	olc::Decal* decalWaterDrop;
-	olc::Sprite* spriteRainfallIcon;
-	olc::Decal* decalRainfallIcon;
+	olc::Renderable renderableCloseIcon, renderableSettingsIcon, renderableInfoIcon, renderableDragonLogo;
+	olc::Renderable renderableBackgroundImage, renderableAreaBorders, renderableSetupScreen, renderableInfoScreen;
+	olc::Renderable renderableThermometerIconF, renderableThermometerIconC, renderableWaterDropIcon, renderableRainfallIcon;
+	olc::Renderable renderableWindDir, renderableRainGaugeOutline, renderableRainGaugeWater, renderableSignalStrength[5];
+	olc::Renderable renderableTrendArrowUp, renderableTrendArrowSteady, renderableTrendArrowDown;
+	olc::Renderable renderableWebConditionsImage, renderableWebForecastImages[3];
 
-	olc::Sprite* spriteWindDir;
-	olc::Decal* decalWindDir;
-	olc::vf2d centerPointWindDir;
+	//olc::Sprite* spriteBackgroundImage;
+	//olc::Decal* decalBackgroundImage;
+	//olc::Sprite* spriteAreaBorders;
+	//olc::Decal* decalAreaBorders;
+	//olc::Sprite* spriteRainGaugeOutline;
+	//olc::Decal* decalRainGaugeOutline;
+	//olc::Sprite* spriteSetupScreen;
+	//olc::Decal* decalSetupScreen;
+	//olc::Sprite* spriteInfoScreen;
+	//olc::Decal* decalInfoScreen;
+	//olc::Sprite* spriteSettingsIcon;
+	//olc::Decal* decalSettingsIcon;
+	//olc::Sprite* spriteInfoIcon;
+	//olc::Decal* decalInfoIcon;
+	//olc::Sprite* spriteDragonLogo;
+	//olc::Decal* decalDragonLogo;
 
-	olc::Sprite* spriteWindCircle;
-	olc::Decal* decalWindCircle;
+	//olc::Sprite* spriteThermometer;
+	//olc::Decal* decalThermometer;
+	//olc::Sprite* spriteWaterDrop;
+	//olc::Decal* decalWaterDrop;
+	//olc::Sprite* spriteRainfallIcon;
+	//olc::Decal* decalRainfallIcon;
 
-	olc::Sprite* spriteRainGaugeBorder;
-	olc::Decal* decalRainGaugeBorder;
-	olc::Sprite* spriteRainGauge;
-	olc::Decal* decalRainGauge;
-	olc::Sprite* spriteRainGaugeClear;
+	//olc::Sprite* spriteWindDir;
+	//olc::Decal* decalWindDir;
+	olc::vi2d centerPointWindDir;
 
-	olc::Sprite* spriteSignalStrength[5];
-	olc::Decal* decalSignalStrength[5];
+	//olc::Sprite* spriteRainGaugeWater;
+	//olc::Decal* decalRainGaugeWater;
 
-	olc::Sprite* spriteTrendArrowUp;
-	olc::Decal* decalTrendArrowUp;
-	olc::Sprite* spriteTrendArrowSteady;
-	olc::Decal* decalTrendArrowSteady;
-	olc::Sprite* spriteTrendArrowDown;
-	olc::Decal* decalTrendArrowDown;
+	//olc::Sprite* spriteSignalStrength[5];
+	//olc::Decal* decalSignalStrength[5];
+
+	//olc::Sprite* spriteTrendArrowUp;
+	//olc::Decal* decalTrendArrowUp;
+	//olc::Sprite* spriteTrendArrowSteady;
+	//olc::Decal* decalTrendArrowSteady;
+	//olc::Sprite* spriteTrendArrowDown;
+	//olc::Decal* decalTrendArrowDown;
 
 	olc::Decal* decalTrendOutdoorTemp;
 	olc::Decal* decalTrendOutdoorHumidity;
 
-	olc::Sprite* spriteWebConditionsImage;
-	olc::Decal* decalWebConditionsImage;
-	olc::Sprite* spriteWebForecastImages[3];
-	olc::Decal* decalWebForecastImages[3];
-
-	olc::Renderable renderableDateText, renderableTimeText, renderableIndoorLabel, renderableOutdoorLabel, renderableAppNameLabel, renderableSettingsLabel;
+	//olc::Sprite* spriteWebConditionsImage;
+	//olc::Decal* decalWebConditionsImage;
+	//olc::Sprite* spriteWebForecastImages[3];
+	//olc::Decal* decalWebForecastImages[3];
 
 	olc::Renderable renderableLowLabel18, renderableHighLabel18, renderableLowLabel24, renderableHighLabel24;
-	olc::Renderable renderableIndoorLowValue, renderableIndoorHighValue;
 
-	olc::Renderable renderableLabelTempF, renderableDewPointUnits, renderableLabelDewpoint;
-	olc::Renderable renderableTempValue, renderableTempDecimalValue, renderableOutdoorTempLowValue, renderableOutdoorTempHighValue;
-	olc::Renderable renderableIndoorTempUnits, renderableIndoorTempValue, renderableIndoorTempLowValue, renderableIndoorTempHighValue;
-	olc::Renderable renderableFeelsLikeLabel, renderableFeelsLikeValue, renderableFeelsLikeUnits;
-	olc::Renderable renderableUVindexLabel, renderableUVindexValue, renderableLightLevelLabel, renderableLightLevelValue, renderableLightLeveilUnits;
+	textObject textObjectDateText, textObjectTimeText, textObjectIndoorLabel, textObjectOutdoorLabel, textObjectAppNameLabel, textObjectSetupWinLabel;
+	textObject textObjectInfoPageTitle;
 
-	//olc::Renderable renderableLabelHumidityLow, renderableLabelHumidityHigh;
-	olc::Renderable renderableLabelHumidity, renderableHumidityUnits, renderableHumidityValue, renderableHumidityLowValue, renderableHumidityHighValue, renderableDewpointValue;
-	olc::Renderable renderableIndoorHumidityUnits, renderableIndoorHumidityValue;
+	textObject textObjectIndoorLowValue, textObjectIndoorHighValue;
 
-	olc::Renderable windSpeedUnitsText, renderableLabelWindSpeedAvg, windSpeedText, renderableWindSpeedAvg, renderableWindSpeedHighLabel, renderableWindSpeedHighValue;
-	olc::Renderable renderableWindSpeedUnits, renderableWindDirName;
+	textObject textObjectLabelTempUnits, textObjectDewPointUnits, textObjectLabelDewpoint;
+	textObject textObjectTempValue, textObjectTempDecimalValue, textObjectOutdoorTempLowValue, textObjectOutdoorTempHighValue;
+	textObject textObjectIndoorTempUnits, textObjectIndoorTempValue, textObjectIndoorTempLowValue, textObjectIndoorTempHighValue;
+	textObject textObjectFeelsLikeLabel, textObjectFeelsLikeValue, textObjectFeelsLikeUnits;
+	textObject textObjectUVindexLabel, textObjectUVindexValue, textObjectLightLevelLabel, textObjectLightLevelValue, textObjectLightLeveilUnits;
 
-	olc::Renderable renderableRainfallLabel, renderbleRainfallTodayLabel, renderableRainfallRateLabel, renderableRainTodayUnitsLabel, renderableRainfallRateUnits;
-	olc::Renderable renderableRainfallValue, renderableRainfallRateValue, renderableRainGaugeUnits[rainGaugeMarksTotal + 1];
+	textObject textObjectLabelHumidity, textObjectHumidityUnits, textObjectHumidityValue, textObjectHumidityLowValue, textObjectHumidityHighValue, textObjectDewpointValue;
+	textObject textObjectIndoorHumidityUnits, textObjectIndoorHumidityValue;
 
-	olc::Renderable renderableSensorInfoLabel, renderableSignalLabel, renderableSensorOutdoorLabel, renderableSensorIndoorLabel;
-	olc::Renderable renderableSignalOutdoorLabel, renderableSignalIndoorLabel;
-	olc::Renderable renderableBatteryOutdoorLabel, renderableBatteryIndoorLabel, renderableBatteryOutdoorValue, renderableBatteryIndoorValue;
-	olc::Renderable renderableChannelOutdoorLabel, renderableChannelOutdoorValue, renderableChannelIndoorLabel, renderableChannelIndoorValue;
+	textObject windSpeedUnitsText, textObjectLabelWindSpeedAvg, windSpeedText, textObjectWindSpeedAvg, textObjectWindSpeedPeakLabel, textObjectWindSpeedPeakValue;
+	textObject textObjectWindSpeedUnits, textObjectWindDirName;
 
-	olc::Renderable renderableForecastNowLabel, renderableForecastToday, renderableForecastTomorrow, renderableConditionsDesc;
-	olc::Renderable renderableForecastDays[3], renderableForecastText[3];
+	textObject textObjectRainfallLabel, textObjectRainfallTodayLabel, textObjectRainfallRateLabel, textObjectRainTodayUnitsLabel, textObjectRainfallRateUnits;
+	textObject textObjectRainfallValue, textObjectRainfallRateValue, textObjectRainGaugeUnits[rainGaugeMarksTotal + 1];
+	textObject textObjRainStartLabel, textObjRainStopLabel, textObjRainStartValue, textObjRainStopValue;
 
-	olc::vf2d positionTemp, positionSensorInfoTitle, positionSensorAreaStart, positionSensorAreaSize;
+	textObject textObjectSensorInfoLabel, textObjectSignalLabel, textObjectSensorOutdoorLabel, textObjectSensorIndoorLabel;
+	textObject textObjectSignalOutdoorLabel, textObjectSignalIndoorLabel;
+	textObject textObjectBatteryOutdoorLabel, textObjectBatteryIndoorLabel, textObjectBatteryOutdoorValue, textObjectBatteryIndoorValue;
+	textObject textObjectChannelOutdoorLabel, textObjectChannelOutdoorValue, textObjectChannelIndoorLabel, textObjectChannelIndoorValue;
+
+	textObject textObjectForecastNowLabel, textObjectForecastToday, textObjectForecastTomorrow, textObjectConditionsDesc;
+	textObject textObjectForecastDays[3], textObjForecastToday[3], textObjForecastTomorrow[3];
+
+	textObject textObjectAuthorText[2], textObjectIntroText[5], textObjectThanksTitle, textObjectThanksText[5];
+	textObject textObjectAttribsTitle, textObjectAttribText[5], textObjectAttribURL[5], textObjectSymbols[5];
+
+	textObject textObjectSetupUnitsButton, textObjectSetupUnitsLabel, textObjectSetupUnitsValue, textObjectSetupsResetStats;
+	textObject textObjectSetupWebWxLabel, textObjectSetupWebWxValue, textObjectSetupWebWxButton;
+	textObject textObjSetupOutdoorCalLabel, textObjSetupIndoorCalLabel;
+	textObject textObjSettingsLabel, textObjInputBuffer, textObjDialogBoxMsg;
+
+	olc::vi2d positionTemp;
+	olc::vf2d positionSensorAreaStart, positionSensorAreaSize, posSensorAreaDividerStart, posSensorAreaDividerEnd;
 	olc::vf2d positionSignalOutdoorCenter, positionSignalIndoorCenter, positionSignalMeterOutdoor, positionSignalMeterIndoor;
 	olc::vf2d positionBatteryOutdoorLabel, positionBatteryIndoorLabel, positionChannelOutdoorLabel, positionChannelIndoorLabel;
 
-	olc::vf2d positionWindowCenter, positionOutdoorAreaStart, positionOutdoorAreaSize, positionOutdoorTitle;
-	olc::vf2d positionIndoorAreaStart, positionIndoorAreaSize, positionIndoorTitle;
-	olc::vf2d positionOutdoorTempValueF, positionTempLabelF, positionOutdoorTempHighValue, positionOutdoorTempLowValue, positionOutdoorTrendOffset;
+	olc::vf2d positionWindowCenter, positionOutdoorAreaStart, positionOutdoorAreaSize;
+	olc::vf2d positionIndoorAreaStart, positionIndoorAreaSize;
+	olc::vf2d positionOutdoorTempValue, positionTempLabelF, positionOutdoorTempHighValue, positionOutdoorTempLowValue, positionOutdoorTrendOffset;
 	olc::vf2d positionOutdoorHumidityValue, positionHumidityLowValue, positionHumidityHighValue;
 	olc::vf2d positionDewPointLabel, positionDewPointValue, positionFeelsLikeLabel, positionFeelsLikeLabelSize, positionFeelsLikeValue;
 	olc::vf2d positionLeftSideDivider;
 	olc::vf2d positionUVindexLabel, positionUVindexValue, positionLightInfoNext, positionLightLevelLabel, positionLightLevelValue, positionUVindexGraph, positionUVindexArrow;
-	olc::vf2d windCircleCenterPoint, positionWindSpeedAvgLabel, positionWindSpeedHighLabel;	// Wind-related position definitions
 
-	olc::vf2d positionRainAreaStart, positionRainAreaSize, positionRainAreaTitle;
-	olc::vf2d rainGaugeFilledStart, rainGaugeFilledSize, rainGaugeTotalSize, rainGaugeFilledStartPrev, rainGaugeFilledSizePrev;
+	// Wind-related position definitions
+	olc::vf2d positionWindAvgOffset;
+	olc::vf2d windCircleCenterPoint, positionWindSpeedAvgLabel, positionWindSpeedPeakLabel;
+	olc::vi2d posWindDirectionText, windDirectionTextStart, windDirectionTextSize;
 
-	olc::vf2d positionInfoAreaStart, positionInfoAreaSize, positionInfoAreaTitle, positionInfoAreaGearIcon;
+	olc::vi2d positionRainAreaStart, positionRainAreaSize, positionRainGauge, positionRainfallValue;
+	olc::vi2d positionRainfallTodayLabel, positionRainfallTodayValue, positionRainfallRateLabel, positionRainfallRateValue;
+	olc::vi2d rainGaugeTotalSize, rainGaugeFilledStart, rainGaugeFilledSize;
+
+	olc::vf2d positionForecastAreaStart, positionForecastAreaSize, positionAboutAppBoxStart, positionAboutAppBoxSize;
+	olc::vf2d positionSystemDate, positionSystemTime, positionCloseIcon, positionSettingsIcon;
 
 	olc::vf2d positionAnimationSheetOffset = { 0, 0 };
 
+	olc::vi2d setupWindowSize;
+	int setupWindowLeftColumnX, setupWindowMiddleColumnX, setupWindowRightColumnX, setupWindowMiddleRowY, setupWindowBottomRowY;
+	int setupSensorBoxLeftOffsetX, setupSensorBoxRightOffsetX, setupSensorBoxTopOffsetY, setupSensorBoxBottomOffsetY;
+	int setupUnitsLabelY, setupWebWxLabelY, setupSdrExecPathLabelY;
+
+	olc::vi2d positionSetupTextCursor, positionSetupOutdoorCalLabel, positionSetupIndoorCalLabel, positionSetupInfoButton;
+
 	int spacerFontSize18, spacerFontSize24, spacerFontSize32;
-	int sensorAreaDividerX;
+	float sensorAreaDividerX;
 	int infoAreaDividerX, infoAreaDividerStartY, infoAreaDividerEndY;
 
-	olc::Font fontSize18, fontSize22, fontSize24, fontSize32, fontSize40, fontSize56, fontSize72, fontSize96;
+	olc::Font fontSize16, fontSize18, fontSize22, fontSize24, fontSize26, fontSize28, fontSize30, fontSize32, fontSize40, fontSize56, fontSize72, fontSize96;
 
 	olc::vf2d positionDashCorrection18 = { 2, 7 };
 	olc::vf2d positionDashCorrection24 = { 2, 9 };
@@ -172,37 +245,56 @@ public:
 	olc::vf2d positionDashCorrection56 = { 0, 16 };
 	olc::vf2d positionDashCorrection96 = { 0, 12 };
 
-	std::u32string strFeelsLikeLabel;
-
 	float windCircleRadius;
-
 	float screenPaddingOffsetY;
 	float outdoorAreaStartScaleX, outdoorAreaStartScaleY;
 	float outdoorAreaSizeScaleX, outdoorAreaSizeScaleY;
-
 	float outdoorMainValueScaleX, outdoorTempValueScaleY, outdoorHumidityValueScaleY;
-
 	float outdoorHighLowOffsetY, outdoorTrendOffsetX, outdoorTrendOffsetY;
-
 	float leftDividerOffset;
 
 	std::time_t systemTimeNow, systemTimePrevious;
 	std::string dayOfTheWeekAbbr[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
+	float windDirNewPosition;
 	float animationElapsedTime = 0.0f;
+	float windDirCurVelocity = 0.0f;
+	float windDirStiffness = 1.0f;  // Higher = faster response
+	float windDirDamping = 0.5f;     // Higher = less oscillation
+	//float dt = 1.0f / 60.0f;  // 60 FPS
 
 	int wxIconAnimatedCounter;
 
 	float rainGaugeFilledPercentage;
-	float rainGaugeTotalWidth = 60.0f;
-	//float rainGaugeTotalHeight = 352.0f;
-	float rainGaugeTotalHeight = 300.0f;
-	float rainGaugeFilledHeight;
+	int rainGaugeFilledHeight, rainGaugeTotalWidth = 60, rainGaugeTotalHeight = 280;
+	rainGaugeTickMark rainGaugeTickMarks[rainGaugeMarksTotal + 1];
+	struct
+	{
+		const std::string metric = "{:02.1f} mm";
+		const std::string imperial = "{:.2f} in";
+	} rainGaugeTickFormat;
 
 	// UV Index-related variables and definitions
+	olc::Pixel uvPixelColorCurrent;
 	const olc::Pixel uvPixelColors[5] = { { 0x00, 0xFF, 0x00 }, { 0xFF, 0xFF, 0x00 }, { 0xFF, 0xA5, 0x00 }, { 0xFF, 0x00, 0x00 }, { 0x80, 0x00, 0x80 } };
 	const float uvSegmentRatios[4] = { 0.25f, 0.25f, 0.20f, 0.30f };
 	float uvGraphTotalHeight, uvSegmentLength, uvGraphTotalWidth, uvSegmentSizes[4], uvSegmentOffsets[4];
 
 	std::u32string strLightLevelValue;
+
+	std::u32string strTitleAuthorText[2] = { U"DragonWx  v1.0", U"Written by Todd Wallace" };
+
+	std::u32string strIntroText[3] = {  U"DragonWx is a graphical frontend for displaying live weather data transmitted by many popular wireless home weather", 
+										U"stations. It was written in C++ and leverages the olcPixelGameEngine library for rendering. It requires a functional install",
+										U"of the open-source SDR tuner/decoder tool RTL_433 in order to work. Refer to the included README for more information." };
+
+	std::u32string strThanksText[2] = { U"Special thanks to Kirstin Stich for her invaluable insight/input on the look and feel of the app, and to everyone on the ",
+										U"OneLoneCoder Discord for all your help, advice, and patience with my coding questions! Thank you very much!" };
+	std::string strAttribsTitle = "Attribution";
+	std::u32string strAttribText[5] = { U"Weather icons by Bas Milius", U"Arrow icon by Dave Gandy", U"Up/Down icons by Nur Syifa Fauziah",
+										U"Info icon by Meaicon", U"Gear icon by Freepik" };
+
+	std::u32string strAttribURL[5] = {	U"https://bas.dev/work/meteocons", U"https://flaticon.com/free-icon/long-arrow-pointing-to-the-right_25426", 
+										U"https://flaticon.com/free-icon/increase_12616567", U"https://www.flaticon.com/free-icon/info_18359960",
+										U"https://www.flaticon.com/free-icon/gear_484613" };
 };
