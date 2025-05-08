@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release (Console)|x64 = Release (Console)|x64
+		Release (Console)|x86 = Release (Console)|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +19,10 @@ Global
 		{BEB400A5-512F-430A-86C1-FCA412E37125}.Debug|x64.Build.0 = Debug|x64
 		{BEB400A5-512F-430A-86C1-FCA412E37125}.Debug|x86.ActiveCfg = Debug|Win32
 		{BEB400A5-512F-430A-86C1-FCA412E37125}.Debug|x86.Build.0 = Debug|Win32
+		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release (Console)|x64.ActiveCfg = Release (Console)|x64
+		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release (Console)|x64.Build.0 = Release (Console)|x64
+		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release (Console)|x86.ActiveCfg = Release (Console)|Win32
+		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release (Console)|x86.Build.0 = Release (Console)|Win32
 		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release|x64.ActiveCfg = Release|x64
 		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release|x64.Build.0 = Release|x64
 		{BEB400A5-512F-430A-86C1-FCA412E37125}.Release|x86.ActiveCfg = Release|Win32
