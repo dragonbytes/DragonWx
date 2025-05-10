@@ -14,8 +14,10 @@ DragonWx is a weather display app that receives live telemetry from nearby Home 
 Before using DragonWx, I recommend verifying that you have a working rtl_433 setup by running it first in a terminal to make sure it sees your SDR of choice and is receiving telemetry. rtl_433 can receive and decode a wide range of wireless devices so you'll probably see telemetry from more than just weather stations! It really is a powerful tool! If you are having trouble receiving the pings from your weather station, you may need to tweak/adjust the gain settings of your SDR, but that's beyond the scope of this document. Please check out the <a href="https://github.com/merbanan/rtl_433">rtl_433 GitHub</a> page for more in-depth instructions/information on setting it up.
 
 <br>
-
-<img src="./readme_assets/Screenshot 2025-05-07 005041.jpg">
+<p align="center">
+	<img src="./readme_assets/Screenshot 2025-05-07 005041.jpg">
+<i>Example output from rtl_433 running successfully in the terminal</i>
+</p>
 <!-- Example output from rtl_433 running successfully in the terminal -->
 <br>
 
