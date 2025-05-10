@@ -9,9 +9,16 @@ DragonWx is a weather display app that receives live telemetry from nearby Home 
 - A functional install of the rtl_433 tuner/decoder tool (https://github.com/merbanan/rtl_433). This open-source tool is what does all the "heavy lifting" in terms of tuning a compatible SDR to receive the pings, and then decoding them into useful human-readable output. Without this tool, my weather app is basically useless. LOL
 - An SDR receiver compatible with rtl_433. I'd recommend one of the RTL-SDR variants like the "nooelec". There are also builds of rtl_433 that include the "SoapySDR" driver which adds support for additional SDR devices (such as the SDRplay receivers).
 
-### Setup Instructions
+## Setup Instructions
 
-Before using DragonWx, I recommend verifying that you have a working rtl_433 setup by running it first in a terminal to make sure it sees your SDR of choice and is receiving telemetry. rtl_433 can receive and decode a wide range of wireless devices so you'll probably see telemetry from more than just weather stations! It really is a powerful tool! If you are having trouble receiving the pings from your weather station, you may need to tweak/adjust the gain settings of your SDR, but that's beyond the scope of this document. Please check out the <a href="https://github.com/merbanan/rtl_433">rtl_433 GitHub</a> page for more in-depth instructions/information on setting it up.
+### Confirm Your SDR / rtl_433 Setup Works
+
+Before using DragonWx, I recommend verifying that you have a working rtl_433 setup by running it first in a terminal to make sure it sees your SDR of choice and is receiving telemetry. rtl_433 can receive and decode a wide range of wireless devices so you'll probably see telemetry from more than just weather stations! It really is a powerful tool! If you are having trouble receiving the pings from your weather station, you may need to tweak/adjust the gain settings of your SDR, but that's beyond the scope of this document. Please check out the <a href="https://github.com/merbanan/rtl_433">rtl_433 GitHub</a> page for more in-depth instructions/information on setting it up. Here is a simple example for reference using an SDRplay as the device (via SoapySDR) and with a gain setting of 5 dB:
+
+```cmd
+
+rtl_433-rtlsdr-soapysdr.exe -d driver=sdrplay -g5
+```
 
 <br>
 <p align="center">
