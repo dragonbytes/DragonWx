@@ -15,9 +15,9 @@ DragonWx is a weather display app that receives live telemetry from nearby Home 
 
 ### Confirm Your SDR / rtl_433 Setup Works
 
-Before using DragonWx, I recommend verifying that you have a working rtl_433 setup by running it first in a terminal to make sure it sees your SDR of choice and is receiving telemetry. rtl_433 can receive and decode a wide range of wireless devices so you'll probably see telemetry from more than just weather stations! It really is a powerful tool! If you are having trouble receiving the pings from your weather station, you may need to tweak/adjust the gain settings of your SDR, but that's beyond the scope of this document. Please check out the <a href="https://github.com/merbanan/rtl_433">rtl_433 GitHub</a> page for more in-depth instructions/information on setting it up.
+Before using DragonWx, I recommend verifying that you have a working rtl_433 setup by running it first in a terminal to make sure it sees your SDR of choice and is receiving telemetry. rtl_433 can receive and decode a wide range of wireless devices so you'll probably see telemetry from more than just weather stations! It really is a powerful tool! If you are having trouble receiving the pings from your weather station, you may need to tweak/adjust the gain settings of your SDR, but that's beyond the scope of this document. Please check out the <a href="https://github.com/merbanan/rtl_433">rtl_433 GitHub</a> page for more in-depth instructions/information on setting it up. Once you are receiving good telemetry, note the ID number of your specific Outdoor sensor (and Indoor sensor if you have one). These IDs will be required during the DragonWx setup process described below.
 
-A simple example for reference of using an SDRplay as the device (via SoapySDR) and with a gain setting of 5 dB:
+A simple example, for reference, of using an SDRplay as the device (via SoapySDR) and with a gain setting of 5 dB:
 <pre>rtl_433-rtlsdr-soapysdr.exe -d driver=sdrplay -g5</pre>
 
 <br>
@@ -35,7 +35,7 @@ The first time you launch DragonWx, you will get a welcome message that directs 
 
 #### Required Fields
 
-- Sensor ID(s) corresponding to your Outdoor and/or Indoor weather sensor
+- Sensor ID(s) corresponding to your Outdoor and/or Indoor weather sensor(s).<br>(These IDs can be found while running rtl_433 directly in a terminal as described above.)
 - Path to your rtl_433 executable
 - Potentially additional command-line arguments for rtl_433 if your specific SDR requires it (Example: "-d driver=sdrplay" for SDRplay SDRs)
 
