@@ -90,9 +90,12 @@ struct buttonStruct
 
 struct dialogBox
 {
-	std::string textArray[3];
+	bool showInForeground;
 	olc::vi2d size;
-	textObject textObjArray[3];
+	std::string textArray[4];
+	bool textCenteredArray[4] = { true, false, false, false };
+	int textLineOffsetArray[4];
+	textObject textObjArray[4];
 };
 
 struct rainGaugeTickMark
@@ -123,6 +126,23 @@ struct tempOffsetValuePair
 	{
 		metric = 0.0f;
 		imperial = 0.0f;
+	}
+};
+
+struct rainGaugeStruct
+{
+	float inches = 1.0f;
+	float millimeters = 25.0f;
+	float GetValue(bool isMetric) { return (isMetric ? millimeters : inches); }
+	void GrowCapacity()
+	{
+		inches += 1.0f;
+		millimeters += 25.0f;
+	}
+	void ResetCapacity()
+	{
+		inches = 1.0f;
+		millimeters = 25.0f;
 	}
 };
 
@@ -164,6 +184,23 @@ struct rainfallAmountValuePair
 	}
 };
 
+struct rainfallRateStruct
+{
+	std::time_t timePrevious = 0, timeCurrent = 0, timeDelta = 0;
+	rainfallAmountValuePair rainfallRate;
+
+	void Update(std::time_t newTime, float newRainfallDelta, bool ifSourceMetric)
+	{
+		timePrevious = timeCurrent;
+		timeCurrent = newTime;
+		if (timePrevious != 0)
+		{
+			timeDelta = timeCurrent - timePrevious;
+			rainfallRate.SetValue((3600.0f / timeDelta) * newRainfallDelta, ifSourceMetric);
+		}
+	}
+};
+
 struct configEntry
 {
 	std::string keyword;
@@ -171,30 +208,11 @@ struct configEntry
 	std::variant<bool*, std::string*, int*, tempOffsetValuePair*> varPtr;
 };
 
-struct rainGaugeStruct
-{
-	float inches = 1.0f;
-	float millimeters = 25.0f;
-	float GetValue(bool isMetric) { return (isMetric ? millimeters : inches); }
-	void GrowCapacity()
-	{
-		inches += 1.0f;
-		millimeters += 25.0f;
-	}
-};
-
 struct floatPrevCur
 {
 	float previous;
 	float current;
 };
-/*
-struct intPrevCur
-{
-	int previous;
-	int current;
-};
-*/
 
 struct stringPrevCur
 {
@@ -219,7 +237,7 @@ struct intRangeStruct
 		if ((low == undefinedIntValue) || (newValue < low))
 			low = newValue;
 
-		if (newValue != previous)
+		if (newValue != current)
 		{
 			previous = current;
 			current = newValue;
@@ -285,7 +303,7 @@ struct temperatureStruct
 
 struct windSpeedUnitsPair
 {
-	float mph = 300.0f, kph = 300.0f;
+	float mph = undefinedFloatValue, kph = undefinedFloatValue;
 	float GetValue(bool ifUnitsMetric) { return (ifUnitsMetric ? kph : mph); }
 	void SetValue(float newValue, bool ifUnitsMetric)
 	{
@@ -299,6 +317,11 @@ struct windSpeedUnitsPair
 			mph = newValue;
 			kph = newValue * 1.6093483909479f;
 		}
+	}
+	void Clear()
+	{
+		mph = undefinedFloatValue;
+		kph = undefinedFloatValue;
 	}
 	bool IsDefined() const { return ((mph != undefinedFloatValue) || (kph != undefinedFloatValue));  }
 };

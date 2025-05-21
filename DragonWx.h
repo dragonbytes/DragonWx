@@ -25,7 +25,6 @@ public:
 	olc::vi2d GetCenteredStartPosition(olc::vi2d, olc::vi2d);
 	std::u32string ConvertedString32(std::string);
 	olc::vi2d TextCenteredOffsetY(std::string, olc::Font*);
-	//std::u32string BoxResultVariableAsString32(inputBoxStruct*);
 	void RenderString(std::string, olc::Font*, olc::Pixel, textObject*, olc::vi2d);
 	void RenderString32(std::u32string, olc::Font*, olc::Pixel, textObject*, olc::vi2d, bool);
 	void RenderString32(std::u32string, olc::Font*, olc::Pixel, textObject*, olc::vi2d);
@@ -56,6 +55,7 @@ public:
 	float update_weather_vane_spring(float current, float target, float& velocity, float stiffness, float damping, float dt);
 	float update_weather_vane(float current, float target, float& velocity, float max_speed, float acceleration, float dt);
 	void MidnightDailyReset();
+	void ResetAllStatistics();
 	bool LoadWebWxAssets(wxWebEntry*, olc::Decal*);
 	//bool SaveConfigFile();
 
@@ -75,17 +75,16 @@ public:
 	buttonStruct buttonUnitsToggle, buttonForecastOnOff, buttonResetStats, buttonAboutApp, buttonStartStopRTL433, buttonOk, buttonCancel;
 
 	dialogBox dialogBoxFailedExecCmd, dialogBoxNoValidConfig, dialogBoxInvalidValue, dialogBoxRestartRequired;
+	dialogBox* dialogBoxForegroundPtr = nullptr;
 
 	float restartPendingElapsed = 0.0f;
 	int minuteTimeCounter = 0;		// This allows me to use single 15 second interval to also handle events once per minute
-	int secondsCounter30 = 0;		// This allows me to use single 15 second interval to also handle events once per 30 seconds
 	float cursorBlinkElapsedTime = 0.0f;
 	int setupActiveInputBoxID = -1;
 
 	olc::vi2d positionMouseCursor;
 	bool setupUseMetricUnits, setupWebWxEnabled;
 	bool pendingRestartRTL433 = false, mouseWaitingButtonRelease, textCursorBlinkState, useFeelsLikeLabel, useLuxValue, useNumericWindDirection;
-	bool dialogBoxInForeground = false, restartMsgInForeground = false;
 	olc::Key keyPrevious;
 
 	std::string strClipboardContents;
@@ -110,54 +109,10 @@ public:
 	olc::Renderable renderableTrendArrowUp, renderableTrendArrowSteady, renderableTrendArrowDown;
 	olc::Renderable renderableWebConditionsImage, renderableWebForecastImages[3];
 
-	//olc::Sprite* spriteBackgroundImage;
-	//olc::Decal* decalBackgroundImage;
-	//olc::Sprite* spriteAreaBorders;
-	//olc::Decal* decalAreaBorders;
-	//olc::Sprite* spriteRainGaugeOutline;
-	//olc::Decal* decalRainGaugeOutline;
-	//olc::Sprite* spriteSetupScreen;
-	//olc::Decal* decalSetupScreen;
-	//olc::Sprite* spriteInfoScreen;
-	//olc::Decal* decalInfoScreen;
-	//olc::Sprite* spriteSettingsIcon;
-	//olc::Decal* decalSettingsIcon;
-	//olc::Sprite* spriteInfoIcon;
-	//olc::Decal* decalInfoIcon;
-	//olc::Sprite* spriteDragonLogo;
-	//olc::Decal* decalDragonLogo;
-
-	//olc::Sprite* spriteThermometer;
-	//olc::Decal* decalThermometer;
-	//olc::Sprite* spriteWaterDrop;
-	//olc::Decal* decalWaterDrop;
-	//olc::Sprite* spriteRainfallIcon;
-	//olc::Decal* decalRainfallIcon;
-
-	//olc::Sprite* spriteWindDir;
-	//olc::Decal* decalWindDir;
 	olc::vi2d centerPointWindDir;
-
-	//olc::Sprite* spriteRainGaugeWater;
-	//olc::Decal* decalRainGaugeWater;
-
-	//olc::Sprite* spriteSignalStrength[5];
-	//olc::Decal* decalSignalStrength[5];
-
-	//olc::Sprite* spriteTrendArrowUp;
-	//olc::Decal* decalTrendArrowUp;
-	//olc::Sprite* spriteTrendArrowSteady;
-	//olc::Decal* decalTrendArrowSteady;
-	//olc::Sprite* spriteTrendArrowDown;
-	//olc::Decal* decalTrendArrowDown;
 
 	olc::Decal* decalTrendOutdoorTemp;
 	olc::Decal* decalTrendOutdoorHumidity;
-
-	//olc::Sprite* spriteWebConditionsImage;
-	//olc::Decal* decalWebConditionsImage;
-	//olc::Sprite* spriteWebForecastImages[3];
-	//olc::Decal* decalWebForecastImages[3];
 
 	olc::Renderable renderableLowLabel18, renderableHighLabel18, renderableLowLabel24, renderableHighLabel24;
 
@@ -191,6 +146,7 @@ public:
 	textObject textObjectForecastDays[3], textObjForecastToday[3], textObjForecastTomorrow[3];
 
 	textObject textObjectAuthorText[2], textObjectIntroText[5], textObjectThanksTitle, textObjectThanksText[5];
+	textObject textObjAboutAppTitle, textObjAboutAppText[4];
 	textObject textObjectAttribsTitle, textObjectAttribText[5], textObjectAttribURL[5], textObjectSymbols[5];
 
 	textObject textObjectSetupUnitsButton, textObjectSetupUnitsLabel, textObjectSetupUnitsValue, textObjectSetupsResetStats;
@@ -223,8 +179,6 @@ public:
 	olc::vf2d positionForecastAreaStart, positionForecastAreaSize, positionAboutAppBoxStart, positionAboutAppBoxSize;
 	olc::vf2d positionSystemDate, positionSystemTime, positionCloseIcon, positionSettingsIcon;
 
-	olc::vf2d positionAnimationSheetOffset = { 0, 0 };
-
 	olc::vi2d setupWindowSize;
 	int setupWindowLeftColumnX, setupWindowMiddleColumnX, setupWindowRightColumnX, setupWindowMiddleRowY, setupWindowBottomRowY;
 	int setupSensorBoxLeftOffsetX, setupSensorBoxRightOffsetX, setupSensorBoxTopOffsetY, setupSensorBoxBottomOffsetY;
@@ -236,7 +190,7 @@ public:
 	float sensorAreaDividerX;
 	int infoAreaDividerX, infoAreaDividerStartY, infoAreaDividerEndY;
 
-	olc::Font fontSize16, fontSize18, fontSize22, fontSize24, fontSize26, fontSize28, fontSize30, fontSize32, fontSize40, fontSize56, fontSize72, fontSize96;
+	olc::Font fontSize16, fontSize18, fontSize20, fontSize22, fontSize24, fontSize26, fontSize28, fontSize30, fontSize32, fontSize40, fontSize56, fontSize72, fontSize96;
 
 	olc::vf2d positionDashCorrection18 = { 2, 7 };
 	olc::vf2d positionDashCorrection24 = { 2, 9 };
@@ -257,22 +211,14 @@ public:
 	std::string dayOfTheWeekAbbr[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
 	float windDirNewPosition;
-	float animationElapsedTime = 0.0f;
 	float windDirCurVelocity = 0.0f;
 	float windDirStiffness = 1.0f;  // Higher = faster response
 	float windDirDamping = 0.5f;     // Higher = less oscillation
 	//float dt = 1.0f / 60.0f;  // 60 FPS
 
-	int wxIconAnimatedCounter;
-
 	float rainGaugeFilledPercentage;
 	int rainGaugeFilledHeight, rainGaugeTotalWidth = 60, rainGaugeTotalHeight = 280;
 	rainGaugeTickMark rainGaugeTickMarks[rainGaugeMarksTotal + 1];
-	struct
-	{
-		const std::string metric = "{:02.1f} mm";
-		const std::string imperial = "{:.2f} in";
-	} rainGaugeTickFormat;
 
 	// UV Index-related variables and definitions
 	olc::Pixel uvPixelColorCurrent;
@@ -288,13 +234,11 @@ public:
 										U"stations. It was written in C++ and leverages the olcPixelGameEngine library for rendering. It requires a functional install",
 										U"of the open-source SDR tuner/decoder tool RTL_433 in order to work. Refer to the included README for more information." };
 
+	std::u32string strAboutApp[4] = {	U"The idea for this project came out of my frustration with the stock proprietary display units that ship with alot of the home",
+										U"personal weather stations. In my experiences, they proved to either be unreliable, hard to view at certain angles, or would",
+										U"just fail prematurely. I have a background in coding and knew what SDRs could do from being a Ham Radio operator, so I",
+										U"decided to put them all together and make my own weather station display!" };
+
 	std::u32string strThanksText[2] = { U"Special thanks to Kirstin Stich for her invaluable insight/input on the look and feel of the app, and to everyone on the ",
 										U"OneLoneCoder Discord for all your help, advice, and patience with my coding questions! Thank you very much!" };
-	std::string strAttribsTitle = "Attribution";
-	std::u32string strAttribText[5] = { U"Weather icons by Bas Milius", U"Arrow icon by Dave Gandy", U"Up/Down icons by Nur Syifa Fauziah",
-										U"Info icon by Meaicon", U"Gear icon by Freepik" };
-
-	std::u32string strAttribURL[5] = {	U"https://bas.dev/work/meteocons", U"https://flaticon.com/free-icon/long-arrow-pointing-to-the-right_25426", 
-										U"https://flaticon.com/free-icon/increase_12616567", U"https://www.flaticon.com/free-icon/info_18359960",
-										U"https://www.flaticon.com/free-icon/gear_484613" };
 };

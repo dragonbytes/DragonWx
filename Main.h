@@ -25,7 +25,6 @@ bool StopProcess(ProcessHandle&);
 #endif
 bool StartPipeRTL433();
 bool ClosePipeRTL433();
-//bool isRunningPipeRTL433(ProcessHandle&);
 bool GetOutputRTL433();
 void readWeatherData();
 bool StopThreadRTL433();
@@ -46,16 +45,10 @@ static void TestJSON(std::string);
 double ConvertedTempCtoF(float tempC);
 double ConvertedTempFtoC(float tempF);
 double degreesToRadians(double);
-std::string getOrdinalSuffix(int);
 
 // Calculation functions
 void CalculateFeelsLikeMetrics();
-//void CalculateDewpoint(double, int, double);
-//void CalculateHeatIndex(double, int);
-//void CalculateWindChill(double, double, double, double);
 float CalculateTrendSlope(std::deque<float>* dequeSource);
 
 // Update functions
-//void UpdateHighLowValues(double, temperatureStruct*);
-//void UpdateHighLowValues(int, intRangeStruct*);
 void ApplySensorOffsets(sensorStatus*);

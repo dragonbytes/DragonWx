@@ -46,6 +46,7 @@ bool DragonWx::OnUserCreate()
 
 	fontSize16 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16);
 	fontSize18 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 18);
+	fontSize20 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 20);
 	fontSize22 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 22);
 	fontSize24 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 24);
 	fontSize26 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 26);
@@ -76,13 +77,6 @@ bool DragonWx::OnUserCreate()
 
 	renderableWindDir.Create(46, 46);
 	centerPointWindDir = renderableWindDir.Sprite()->Size() / olc::vi2d(2, 2);
-	//spriteWindDir = new olc::Sprite(46, 46);
-
-	//spriteWindCircle = new olc::Sprite(258, 258);
-	//SetDrawTarget(spriteWindCircle);
-	//Clear(olc::BLANK);
-	//DrawCircle({ spriteWindCircle->Size().x / 2, spriteWindCircle->Size().y / 2 }, 128, rainGaugeBorderColor);
-	//decalWindCircle = new olc::Decal(spriteWindCircle);
 
 	renderableRainGaugeWater.Load("./Images/RainGaugeWater.png");
 
@@ -104,10 +98,10 @@ bool DragonWx::OnUserCreate()
 	renderableInfoIcon.Load("./Images/Info_24px.png");
 	renderableDragonLogo.Load("./Images/TekTodd_Logo_160px.png");
 
-	renderableWebConditionsImage.Load("./Images/Conditions_Icons/not-available.png");
+	renderableWebConditionsImage.Load("./Images/Meteocons/Icons/not-available.png");
 
 	for (int i = 0; i < 3; i++)
-		renderableWebForecastImages[i].Load("./Images/Conditions_Icons/not-available.png");
+		renderableWebForecastImages[i].Load("./Images/Meteocons/Icons/not-available.png");
 
 	strFeelsLikeLabel = U"Feels Like";
 
@@ -151,7 +145,6 @@ bool DragonWx::OnUserCreate()
 	olc::vf2d positionOutdoorLowLabelOffset = positionOutdoorAreaSize * olc::vf2d(-0.35f, 0.260412f);	// Target distance of 110 pixels between High/Low
 	olc::vf2d positionOutdoorHighLabelOffset = positionOutdoorAreaSize * olc::vf2d(-0.02f, 0.260412f);
 
-	//positionOutdoorTrendOffset = positionOutdoorAreaSize * olc::vf2d(0.18f, 0.115f);
 	positionOutdoorTrendOffset = { positionOutdoorAreaSize.x * 0.18f, TextCenteredOffsetY("0", &fontSize96).y - ((renderableTrendArrowSteady.Sprite()->height * 0.29f) / 2.0f) };
 
 	positionOutdoorTempValue = positionOutdoorAreaStart + positionOutdoorTempOffset;
@@ -170,18 +163,8 @@ bool DragonWx::OnUserCreate()
 
 	positionLeftSideDivider = positionFeelsLikeLabel + olc::vf2d(0, 50);
 
-	//positionLightInfoNext = positionLeftSideDivider + olc::vf2d(0, 20);
-	//positionLightLevelValue = positionLightInfo + olc::vf2d(positionOutdoorAreaSize.x / 2, 0);
-
-	//uvGraphTotalHeight = (fontSize32.GetStringBounds(U"11").size.y / 2.0f);
-	//positionUVindexLabel = positionLightInfo + olc::vf2d(0, 35);
-	//positionUVindexValue = positionUVindexLabel + olc::vf2d(positionOutdoorAreaSize.x / 2, 0);
-	//positionUVindexGraph = positionUVindexValue + olc::vf2d(fontSize32.GetStringBounds(U"11").size.x + 5.0f, uvGraphTotalHeight - (uvGraphTotalHeight / 2.0f));
-
-
 	positionForecastAreaSize = { GetWindowSize().x * 0.3f, GetWindowSize().y * 0.2f };
 	positionForecastAreaStart = { positionWindowCenter.x - (positionForecastAreaSize.x / 2), positionIndoorAreaStart.y + positionIndoorAreaSize.y - positionForecastAreaSize.y };
-	//positionInfoAreaGearIcon = positionInfoAreaStart + (positionInfoAreaSize * olc::vf2d(0.90f, 0.50f)) - (spriteSettingsIcon->Size() / olc::vi2d(2, 2));
 
 	infoAreaDividerX = positionForecastAreaStart.x + (positionForecastAreaSize.x * 0.3f);
 	infoAreaDividerStartY = positionForecastAreaStart.y + (positionForecastAreaSize.y * 0.23f);
@@ -189,27 +172,11 @@ bool DragonWx::OnUserCreate()
 
 	windCircleRadius = 128.0f;
 	PRINT_DEBUG("Debug: Wind Circle Radius = %.1f\n", windCircleRadius);
-	//olc::vf2d positionWindAvgOffset = { windCircleRadius * -1.2f, windCircleRadius * 1.1875f };
-	//olc::vf2d positionWindHighOffset = { windCircleRadius * 0.7f, windCircleRadius * 1.1875f };
 
 	rainGaugeTotalSize = { rainGaugeTotalWidth, rainGaugeTotalHeight };
 
 	positionSystemDate = { positionWindowCenter.x, positionOutdoorAreaStart.y };
 	positionSystemTime = { positionWindowCenter.x, positionOutdoorAreaStart.y + 50.0f };
-
-	/*
-	// Configure dimensions and position info of the UV Index graph decals
-	uvGraphTotalWidth = (positionOutdoorAreaStart.x + positionOutdoorAreaSize.x - positionUVindexGraph.x);
-	//positionUVindexGraph += olc::vf2d((positionOutdoorAreaSize.x * 0.10f) / 2.0f, 0);	// Adjust the position of graph to center it within the Outdoor Area Width
-	uvSegmentLength = uvGraphTotalWidth / 11.0f;
-	float segmentOffsetCounter = 0.0f;
-	for (int i = 0; i < 4; i++)
-	{
-		uvSegmentSizes[i] = uvSegmentRatios[i] * uvGraphTotalWidth;
-		uvSegmentOffsets[i] = segmentOffsetCounter;
-		segmentOffsetCounter += uvSegmentSizes[i];
-	}
-	*/
 
 	// DEBUG: Report calculated Position coordinates
 	PRINT_DEBUG("Debug: Outdoor Area Start Coords = %.1f, %.1f\n", positionOutdoorAreaStart.x, positionOutdoorAreaStart.y);
@@ -242,7 +209,6 @@ bool DragonWx::OnUserCreate()
 	int setupSensorTitleBoxesY = setupWindowSize.y * 0.13f;
 	int inputBoxHeight = 40;
 
-	//titleBoxSetup = { U"Settings", &fontSize32, areasBorderColor, positionSetupWindow, setupWindowSize, 20, 45 };
 	titleBoxSetupOutdoor = { U"Outdoor Sensor", &fontSize30, areasBorderColor, { setupOutdoorTitleBoxX, setupSensorTitleBoxesY }, setupSensorBoxSize, 20, 45};
 	titleBoxSetupIndoor = { U"Indoor Sensor", &fontSize30, areasBorderColor, { setupIndoorTitleBoxX, setupSensorTitleBoxesY }, setupSensorBoxSize, 20, 45 };
 
@@ -252,10 +218,6 @@ bool DragonWx::OnUserCreate()
 	DrawBoxTitle(&titleBoxSetupIndoor, &renderableSetupScreen);
 	renderableSetupScreen.Decal()->Update();
 
-	//setupWinBoxLeftColumnX = titleBoxSetupOutdoor.posStart.x + (titleBoxSetupOutdoor.size.x * 0.15f);
-	//setupWinBoxMiddleColumnX = positionSetupWinBox.x + (setupWinBoxSize.x * 0.42f);
-	//setupWinBoxRightColumnX = titleBoxSetup.posStart.x + (setupWinBoxSize.x * 0.68f);
-	//setupWindowTopRowY = setupWindowSize.y * 0.12f;
 	setupWindowMiddleRowY = setupWindowSize.y * 0.3f;
 	setupWindowBottomRowY = setupWindowSize.y * 0.59f;
 
@@ -265,17 +227,11 @@ bool DragonWx::OnUserCreate()
 	setupSensorBoxBottomOffsetY = setupSensorBoxSize.y * 0.45f;
 
 	setupWindowLeftColumnX = setupOutdoorTitleBoxX + setupSensorBoxLeftOffsetX;
-	//setupWindowMiddleColumnX = setupWindowSize.x * 0.42f;
 	setupWindowMiddleColumnX = setupIndoorTitleBoxX + setupSensorBoxLeftOffsetX;
 	setupWindowRightColumnX = setupWindowSize.x * 0.71f;
 
 	setupUnitsLabelY = setupSensorTitleBoxesY;
 	setupWebWxLabelY = setupWindowMiddleRowY;
-
-	//setupUnitsButtonSize = { 150, inputBoxHeight };
-	//setupWebWxButtonSize = { 120, inputBoxHeight };
-	//positionSetupUnitsButton = { setupWindowRightColumnX, setupUnitsLabelY + 40 };
-	//positionSetupWebWxButton = { setupWindowRightColumnX, setupWebWxLabelY + 40 };
 
 	positionSetupOutdoorCalLabel = titleBoxSetupOutdoor.posStart + olc::vi2d(setupSensorBoxLeftOffsetX, setupSensorBoxBottomOffsetY);
 	positionSetupIndoorCalLabel = titleBoxSetupIndoor.posStart + olc::vi2d(setupSensorBoxLeftOffsetX, setupSensorBoxBottomOffsetY);
@@ -320,7 +276,6 @@ bool DragonWx::OnUserCreate()
 	inputBoxSdrParams.label = { U"RTL433 Params", { setupWindowLeftColumnX, setupWindowBottomRowY } };
 	int setupSdrParamsBoxLength = (inputBoxOutdoorCalHumidity.value.pos.x + inputBoxOutdoorCalHumidity.value.size.x) - inputBoxOutdoorCalTemp.value.pos.x;
 	inputBoxSdrParams.value = { inputBoxSdrParams.label.pos + olc::vi2d(0, 35), { setupSdrParamsBoxLength, inputBoxHeight }, inputBoxType::STRING };
-	//inputBoxSdrParams.value = { &sdrExtraArguments, inputBoxSdrParams.label.pos + olc::vi2d(0, 35), { 300, inputBoxHeight } };
 
 	inputBoxLatitude.isEnabled = webWxEnabled;
 	inputBoxLatitude.label = { U"Latitude", { setupWindowRightColumnX, setupWebWxLabelY + 95 } };
@@ -332,20 +287,19 @@ bool DragonWx::OnUserCreate()
 
 	inputBoxSdrExecPath.isEnabled = true;
 	inputBoxSdrExecPath.label = { U"RTL433 Exec Path", { setupWindowLeftColumnX, setupSdrExecPathLabelY } };
-	//int setupSdrExecPathBoxLength = (inputBoxIndoorCalHumidity.value.pos.x + inputBoxIndoorCalHumidity.value.size.x) - inputBoxOutdoorCalTemp.value.pos.x;
+
 	int setupSdrExecPathBoxLength = (inputBoxLongitude.value.pos.x + inputBoxLongitude.value.size.x) - inputBoxOutdoorCalTemp.value.pos.x;
 	inputBoxSdrExecPath.value = { inputBoxSdrExecPath.label.pos + olc::vi2d(0, 35), { setupSdrExecPathBoxLength, inputBoxHeight }, inputBoxType::STRING };
 
 	int setupOkCancelButtonWidth = 120, setupButtonPaddingX = 20;
 	int setupOkCancelButtonsX = (inputBoxLongitude.value.pos.x + inputBoxLongitude.value.size.x) - (setupOkCancelButtonWidth * 2) - setupButtonPaddingX;
 	int setupButtonsBottomY = setupWindowSize.y - 75;
-	//buttonStartStopRTL433 = { true, &fontSize24, olc::WHITE, { buttonResetStats.pos.x + buttonResetStats.size.x + setupButtonPaddingX, setupButtonsBottomY }, { 190, inputBoxHeight } };
+	
 	buttonStartStopRTL433 = { true, &fontSize24, olc::WHITE, { setupWindowLeftColumnX, setupButtonsBottomY }, { 190, inputBoxHeight } };
 	buttonResetStats = { true, &fontSize24, olc::WHITE, { buttonStartStopRTL433.pos.x + buttonStartStopRTL433.size.x + setupButtonPaddingX, setupButtonsBottomY }, { 190, inputBoxHeight }, U"Reset Statistics" };
 	buttonOk = { true, &fontSize24, olc::WHITE, { setupOkCancelButtonsX, setupButtonsBottomY }, { setupOkCancelButtonWidth, inputBoxHeight }, U"Ok" };
 	buttonCancel = { true, &fontSize24, olc::WHITE, { setupOkCancelButtonsX + buttonOk.size.x + setupButtonPaddingX, setupButtonsBottomY }, { setupOkCancelButtonWidth, inputBoxHeight }, U"Cancel" };
 	
-	//buttonAboutApp = { true, &fontSize24, olc::WHITE, { (buttonOk.pos.x - setupButtonPaddingX - 90), setupButtonsBottomY }, { 90, inputBoxHeight }, U"About" };
 	buttonAboutApp = { true, &fontSize24, olc::WHITE, { (buttonResetStats.pos.x + buttonResetStats.size.x + setupButtonPaddingX), setupButtonsBottomY }, { 190, inputBoxHeight }, U"About DragonWx" };
 	positionSetupInfoButton = { buttonOk.pos.x - setupButtonPaddingX - 24, setupButtonsBottomY + 8 };
 
@@ -365,10 +319,21 @@ bool DragonWx::OnUserCreate()
 
 	UpdateAreaBordersSprite();
 
-	dialogBoxNoValidConfig = { { "No valid config file could be loaded." }, { 500, 150 } };
-	dialogBoxFailedExecCmd = { { "Could not launch RTL433 executable. Make", "sure the \"Exec Path\" in your Settings", "points to a RTL433.exe file." }, { 550, 180 } };
-	dialogBoxInvalidValue = { { "Invalid value." }, { 300, 100 } };
-	dialogBoxRestartRequired = { { "RTL433 must be restarted for SDR", "changes to take effect."}, { 450, 150 } };
+	dialogBoxNoValidConfig =	{ invalidConfigFileState, { 560, 200 },
+								{ "Welcome to DragonWx!", "Please click the Gear icon to enter Setup Mode", "and configure your initial settings." },
+								{ true, true }, { 50, 35 } };
+
+	dialogBoxFailedExecCmd =	{ rtl433_failedExecState, { 550, 180 },
+								{ "Could not run RTL433 executable. Make", "sure the \"Exec Path\" in your Settings", "points to a RTL433 program file." },
+								{ true, false, false }, { 35, 35 } };
+
+	dialogBoxInvalidValue =		{ false, { 300, 100 },
+								{ "Invalid value." },
+								{ true } };
+
+	dialogBoxRestartRequired =	{ false, { 450, 150 },
+								{ "RTL433 must be restarted for SDR", "changes to take effect." },
+								{ true, false }, { 35 } };
 
 	sensorAreaDividerX = positionSensorAreaStart.x + (positionSensorAreaSize.x / 2);
 	posSensorAreaDividerStart = { sensorAreaDividerX, positionSensorAreaStart.y + (positionSensorAreaSize.y * 0.18f) };
@@ -410,14 +375,12 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	if (GetMouse(olc::Mouse::LEFT).bPressed)
 	{
 		positionMouseCursor = GetMousePos();
-		if (dialogBoxInForeground)
-			dialogBoxInForeground = false;
-		else if (showNoValidConfigMsg)
-			showNoValidConfigMsg = false;
-		else if (failedExecRTL433)
-			failedExecRTL433 = false;
-		else if (restartMsgInForeground)
-			restartMsgInForeground = false;
+		// First check for pop-up dialog box akerts that may be open and clear it if one is in foreground
+		if (dialogBoxForegroundPtr != nullptr)
+		{
+			dialogBoxForegroundPtr->showInForeground = false;
+			dialogBoxForegroundPtr = nullptr;
+		}
 		else if (infoPageIsForeground)
 		{
 			SetDrawTarget(previousDrawTarget);
@@ -472,6 +435,11 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 					StartPipeRTL433();
 
 			}
+			else if (mouseWithinArea(buttonResetStats.pos, buttonResetStats.size))
+			{
+				ResetAllStatistics();
+
+			}
 			else if (mouseWithinArea(buttonAboutApp.pos, buttonAboutApp.size))
 			{
 				infoPageIsForeground = true;
@@ -511,17 +479,19 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 					indoorSensor.humidity.offset = std::stoi(inputBoxIndoorCalHumidity.value.text);
 				webWxLocationLat = inputBoxLatitude.value.text;
 				webWxLocationLon = inputBoxLongitude.value.text;
-				restartMsgInForeground = ((sdrGainSetting != inputBoxSdrGain.value.text) || (sdrExtraArguments != inputBoxSdrParams.value.text) || (pathToExec != inputBoxSdrExecPath.value.text));
+				dialogBoxRestartRequired.showInForeground = ((sdrGainSetting != inputBoxSdrGain.value.text) || (sdrExtraArguments != inputBoxSdrParams.value.text) || (pathToExec != inputBoxSdrExecPath.value.text));
 				sdrGainSetting = inputBoxSdrGain.value.text;
 				sdrExtraArguments = inputBoxSdrParams.value.text;
 				pathToExec = inputBoxSdrExecPath.value.text;
 				setupActiveInputBoxPtr = nullptr;
-				settingsPageIsForeground = restartMsgInForeground;		// Keep the settings window on screen if the restart msg Dialog Box is being shown
+				settingsPageIsForeground = dialogBoxRestartRequired.showInForeground;		// Keep the settings window on screen if the restart msg Dialog Box is being shown
 			}
 			else if (mouseWithinArea(buttonCancel.pos, buttonCancel.size))
 			{
+				TextEntryEnable(false);
 				setupActiveInputBoxPtr = nullptr;
 				settingsPageIsForeground = false;
+				dialogBoxInvalidValue.showInForeground = false;
 			}
 		}
 		else if (positionMouseCursor.y < screenPaddingOffsetY)
@@ -553,8 +523,6 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			SaveConfigFile();
 			appExitRequested = true;
 			return false;
-			//previousDrawTarget = GetDrawTarget();
-			//infoPageIsForeground = true;
 		}
 		else if (mouseWithinArea(positionFeelsLikeLabel, fontSize32.GetStringBounds(strFeelsLikeLabel).size))
 			useFeelsLikeLabel = !useFeelsLikeLabel;
@@ -601,27 +569,22 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			}
 		}
 
+		#ifdef _DEBUG
 		if (GetKey(olc::Key::R).bPressed && !prevKeyPressed)
 		{
 			//PRINT_DEBUG("Sending Web Wx Request to wttr.in... %s\n", strLocationURL.c_str());
 			//webWxRequested = true;
-			dialogBoxInForeground = true;
 			prevKeyPressed = true;
 		}
 		else if (!GetKey(olc::Key::R).bPressed)
 			prevKeyPressed = false;
+		#endif
 	}
 
 	elapsedTimeCounter += fElapsedTime;
-	animationElapsedTime += fElapsedTime;
 
 	if (pendingRestartRTL433)
 		restartPendingElapsed += fElapsedTime;
-
-	positionAnimationSheetOffset = { wxIconAnimatedCounter * 64.0f, 0.0f };
-	wxIconAnimatedCounter++;
-	if (wxIconAnimatedCounter >= 30)
-		wxIconAnimatedCounter = 0;
 
 	if (elapsedTimeCounter >= 15.0f)
 	{
@@ -708,6 +671,8 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 					if (strRainEventStopTime.at(0) == '0')
 						strRainEventStopTime.erase(0, 1);		// Strip off any leading zeros on the hours value
 				}
+				else if ((std::time(nullptr) - rainEventLastUpdateTime) > rainRateClearedInterval)
+					rainfallData.rainfallRate.SetZero();
 			}
 		}
 
@@ -725,16 +690,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 				LoadWebWxAssets(&webWxCurrentConditions, renderableWebConditionsImage.Decal());
 			}
 		}
-
-		/*
-		secondsCounter30++;
-		if (secondsCounter30 > 2)
-		{
-			secondsCounter30 = 0;
-			if (dequeRainRateSamples.size() > 0)
-				dequeRainRateSamples.pop_front();	// Remove oldest sample since we missed a packet
-		}
-		*/
+		
 		elapsedTimeCounter = 0;
 		PRINT_DEBUG("%s Outdoor Sensor: Consecutive packets = %u\n", GetTimestamp().c_str(), outdoorSensor.packetCounter);
 		PRINT_DEBUG("%s Indoor Sensor: Consecutive packets = %u\n", GetTimestamp().c_str(), indoorSensor.packetCounter);
@@ -747,11 +703,10 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		restartPendingElapsed = 0.0f;
 	}
 
-
 	// Render blank background image
 	DrawDecal({ 0.0f, 0.0f }, renderableBackgroundImage.Decal(), {0.333f, 0.333f});
 
-	if (failedExecRTL433)
+	if (dialogBoxFailedExecCmd.showInForeground)
 	{
 		ShowCenteredDialogBox(&dialogBoxFailedExecCmd);
 		return true;
@@ -850,9 +805,9 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			}
 		}
 
-		if (dialogBoxInForeground)
+		if (dialogBoxInvalidValue.showInForeground)
 			ShowCenteredDialogBox(&dialogBoxInvalidValue);
-		else if (restartMsgInForeground)
+		else if (dialogBoxRestartRequired.showInForeground)
 			ShowCenteredDialogBox(&dialogBoxRestartRequired);
 
 		return true;
@@ -872,25 +827,17 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		RenderString32(strIntroText[1], &fontSize22, olc::WHITE, &textObjectIntroText[1], { titleBoxAboutApp.posStart.x + 60, 285 });
 		RenderString32(strIntroText[2], &fontSize22, olc::WHITE, &textObjectIntroText[2], { titleBoxAboutApp.posStart.x + 60, 310 });
 
-		RenderStringCentered("Credits / Attributions", &fontSize30, olc::WHITE, &textObjectAttribsTitle, olc::vi2d(positionWindowCenter.x, 375));
+		positionTemp = { titleBoxAboutApp.posStart.x + 60, textObjectIntroText[2].posStart.y + 50 };
+		for (int i = 0; i < 4; i++)
+		{
+			RenderString32(strAboutApp[i], &fontSize22, olc::WHITE, &textObjAboutAppText[i], positionTemp);
+			positionTemp += olc::vi2d(0, 25);
+		}
 
+		RenderStringCentered("Special Thanks", &fontSize30, olc::WHITE, &textObjectAttribsTitle, olc::vi2d(positionWindowCenter.x, 515));
+		RenderString32(strThanksText[0], &fontSize22, olc::WHITE, &textObjectThanksText[0], { titleBoxAboutApp.posStart.x + 60, 580 });
+		RenderString32(strThanksText[1], &fontSize22, olc::WHITE, &textObjectThanksText[1], { titleBoxAboutApp.posStart.x + 60, 605 });
 
-		RenderString32(strThanksText[0], &fontSize22, olc::WHITE, &textObjectThanksText[0], { titleBoxAboutApp.posStart.x + 60, 450 });
-		RenderString32(strThanksText[1], &fontSize22, olc::WHITE, &textObjectThanksText[1], { titleBoxAboutApp.posStart.x + 60, 475 });
-
-		olc::vi2d positionAttribTextCurrent = { 180, 525 };
-		int attribLineOffset = 50, attribURLoffset = 25;
-		olc::vi2d positionAttribOffsetX = { 500, 0 };
-		olc::vi2d positionAttribURLOffset = { 0, 25 };
-		RenderString32(strAttribText[0], &fontSize18, olc::WHITE, &textObjectAttribText[0], positionAttribTextCurrent);
-		RenderString32(strAttribURL[0], &fontSize18, olc::Pixel(0x00, 0x70, 0xFF), &textObjectAttribURL[0], positionAttribTextCurrent + olc::vi2d(0, 20));
-		RenderString32(strAttribText[2], &fontSize18, olc::WHITE, &textObjectAttribText[2], positionAttribTextCurrent + olc::vi2d(520, 0));
-		RenderString32(strAttribURL[2], &fontSize18, olc::Pixel(0x00, 0x70, 0xFF), &textObjectAttribURL[2], positionAttribTextCurrent + olc::vi2d(520, 20));
-		positionAttribTextCurrent.y += attribLineOffset;
-		RenderString32(strAttribText[1], &fontSize18, olc::WHITE, &textObjectAttribText[1], positionAttribTextCurrent);
-		RenderString32(strAttribURL[1], &fontSize18, olc::Pixel(0x00, 0x70, 0xFF), &textObjectAttribURL[1], positionAttribTextCurrent + olc::vi2d(0, 20));
-		RenderString32(strAttribText[3], &fontSize18, olc::WHITE, &textObjectAttribText[3], positionAttribTextCurrent + olc::vi2d(520, 0));
-		RenderString32(strAttribURL[3], &fontSize18, olc::Pixel(0x00, 0x70, 0xFF), &textObjectAttribURL[3], positionAttribTextCurrent + olc::vi2d(520, 20));
 		return true;
 	}
 
@@ -903,23 +850,12 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	if (webWxEnabled)
 		RenderString32(titleBoxForecastPanel.text32, titleBoxForecastPanel.fontPtr, olc::GREY, &titleBoxForecastPanel.textObj, titleBoxForecastPanel.posTitle);
 
-	//SetDecalMode(olc::DecalMode::WIREFRAME);
-	//DrawPolygonDecal(nullptr, { {10,10},{100,10},{100,50},{10,50} },
-	//	{ {0,0},{0,0},{0,0},{0,0} }, olc::GREEN);
-	//SetDecalMode(olc::DecalMode::NORMAL);
-
-	//DrawDecal({ 900, 300 }, decalTest);
-
-
 	// Check the current system time and if it has changed since last check, render/display it
 	systemTimeNow = std::time(nullptr);
 	if (systemTimeNow != systemTimePrevious)
 	{
 		std::tm systemTimeLocalNow = *std::localtime(&systemTimeNow);
 		std::tm systemTimeLocalPrevious = *std::localtime(&systemTimePrevious);
-
-		//ConvertTimeToLocal(&systemTimeLocalNow, systemTimeNow);
-		//ConvertTimeToLocal(&systemTimeLocalPrevious, systemTimePrevious);
 
 		// Check for Midnight rollover to reset statistics, etc
 		if ((systemTimeLocalNow.tm_hour == 0) && (systemTimeLocalPrevious.tm_hour != 0))
@@ -937,17 +873,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		strFullyFormattedTime = GetFormattedLocalTime("%I:%M %p", &systemTimeNow);
 		if (strFullyFormattedTime.at(0) == '0')
 			strFullyFormattedTime.erase(0, 1);		// Strip off any leading zeros on the hours value
-		/*
-		int dateResult = std::strftime(strDateWeekMonthDay, sizeof(strDateWeekMonthDay), "%A, %B %d ", &systemTimeLocalNow);
-		int timeResult = std::strftime(strFormattedTime, sizeof(strFormattedTime), "%I:%M %p", &systemTimeLocalNow);
-		if (dateResult && timeResult)
-		{
-			strFullyFormattedDate = strDateWeekMonthDay + std::to_string(systemTimeLocalNow.tm_year + 1900);
-			strFullyFormattedTime = strFormattedTime;
-			if (strFullyFormattedTime.at(0) == '0')
-				strFullyFormattedTime.erase(0, 1);		// Strip off any leading zeros on the hours value
-		}
-		*/
+
 		systemTimePrevious = systemTimeNow;
 	}
 	RenderStringCentered(strFullyFormattedDate, &fontSize40, olc::WHITE, &textObjectDateText, positionSystemDate);
@@ -1083,7 +1009,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			{
 				strLightLevelValue = ConvertedString32(std::to_string(lightLevelLux.current));
 				RenderString32(strLightLevelValue, &fontSize24, olc::WHITE, &textObjectLightLevelValue, positionLightLevelValue);
-				RenderString32(U"lux", &fontSize18, colorLabelText, &textObjectLightLeveilUnits, positionLightLevelValue + olc::vf2d(fontSize24.GetStringBounds(strLightLevelValue + U"0").size.x, 0));
+				RenderString32(U"lux", &fontSize20, colorLabelText, &textObjectLightLeveilUnits, positionLightLevelValue + olc::vf2d(fontSize24.GetStringBounds(strLightLevelValue + U"0").size.x, 0));
 			}
 			positionLightInfoNext += olc::vf2d(0, 40);
 		}
@@ -1241,9 +1167,9 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	RenderString32(rainfallUnits.amount.Label(currentUnits), &fontSize30, colorLabelText, &textObjectRainTodayUnitsLabel, positionRainfallTodayValue + unitsLabelOffset);
 	RenderString32(U"Rate", &fontSize32, olc::GREY, &textObjectRainfallRateLabel, positionRainfallRateLabel);
 	if (currentUnits == metricUnits)
-		tempString32 = ConvertedString32(std::format("{:04.1f}", rainfallRatePerHour.millimeters));
+		tempString32 = ConvertedString32(std::format("{:04.1f}", rainfallData.rainfallRate.millimeters));
 	else
-		tempString32 = ConvertedString32(std::format("{:.2f}", rainfallRatePerHour.inches));
+		tempString32 = ConvertedString32(std::format("{:.2f}", rainfallData.rainfallRate.inches));
 	unitsLabelOffset = { fontSize32.GetStringBounds(tempString32).size.x + 15, fontSize32.GetStringBounds(tempString32).size.y - fontSize30.GetStringBounds(rainfallUnits.rate.Label(currentUnits)).size.y };
 	RenderString32(tempString32, &fontSize32, olc::WHITE, &textObjectRainfallRateValue, positionRainfallRateValue);
 	RenderString32(rainfallUnits.rate.Label(currentUnits), &fontSize30, colorLabelText, &textObjectRainfallRateUnits, positionRainfallRateValue + unitsLabelOffset);
@@ -1312,12 +1238,6 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		RenderStringRightJustified("- -", &fontSize56, olc::GREY, &textObjectIndoorTempValue, positionIndoorTempValue + olc::vf2d(-10, positionDashCorrection56.y));
 	RenderString32(degreeUnits.Label(currentUnits), &fontSize24, colorLabelText, &textObjectIndoorTempUnits, positionIndoorTempValue + olc::vf2d(8, 0));
 
-	//DrawDecal(positionTemp + olc::vf2d(0, fontSize56.GetStringBounds(tempString32).size.y + 10), renderableLabelTempLow.Decal());
-	//RenderHighOrLowValue("Low", highLowIndoorTempF.low, &renderableIndoorTempLowValue, positionTemp + olc::vf2d(10, fontSize56.GetStringBounds(tempString32).size.y + 10), true);
-	//RenderHighOrLowValue("High", highLowIndoorTempF.high, &renderableIndoorTempHighValue, positionTemp + olc::vf2d(85, fontSize56.GetStringBounds(tempString32).size.y + 10), true);
-	//RenderString32(U"Low  69    High  72", &fontSize18, colorLabelText, &renderableIndoorHighLabel, positionTemp + olc::vf2d(-10, fontSize56.GetStringBounds(tempString32).size.y + 10));
-	//positionTemp += olc::vf2d(fontSize56.GetStringBounds(tempString32).size.x + spacerFontSize18, 0);
-	//RenderString32(strDegreesUnitsF, &fontSize24, colorLabelText, &renderableIndoorTempUnits, positionTemp);
 	if (indoorSensor.humidity.current != undefinedIntValue)
 		RenderStringRightJustified(std::format("{:d}", indoorSensor.humidity.current), &fontSize56, olc::WHITE, &textObjectIndoorHumidityValue, positionIndoorHumidityValue);
 	else
@@ -1373,7 +1293,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	DrawDecal(positionCloseIcon, renderableCloseIcon.Decal());
 	
 	// If there was no valid config loaded, show an error message
-	if (showNoValidConfigMsg)
+	if (dialogBoxNoValidConfig.showInForeground)
 		ShowCenteredDialogBox(&dialogBoxNoValidConfig);
 
 	return true;
@@ -1424,7 +1344,7 @@ void DragonWx::OnTextEntryComplete(const std::string& textResult)
 		setupActiveInputBoxPtr = nullptr;
 	}
 	else
-		dialogBoxInForeground = true;
+		dialogBoxInvalidValue.showInForeground = true;
 }
 
 bool DragonWx::mouseWithinArea(olc::vf2d areaStart, olc::vf2d areaSize) const
@@ -1512,6 +1432,7 @@ void DragonWx::RenderString32(std::u32string inputString32, olc::Font* fontToUse
 	if ((inputString32 != textObj->string32) || forceRender)
 	{
 		textObj->renderable = fontToUse->RenderStringToRenderable(inputString32 + U" ", textColor);
+		textObj->posStart = leftPos;
 		textObj->posOffset = { 0, 0 };
 		textObj->width = fontToUse->GetStringBounds(inputString32).size.x;
 		textObj->height = fontToUse->GetStringBounds(inputString32).size.y;
@@ -1892,21 +1813,42 @@ void DragonWx::ShowCenteredDialogBox(dialogBox* dialogBoxPtr)
 	positionTemp = GetCenteredStartPosition(GetScreenSize(), dialogBoxPtr->size);
 
 	// Measure the total height of all defined lines of text and then add padding to it to calculate initial position of the first centered line of text
-	int totalTextHeight = 0;
-	for (int i = 0; i < 3; i++)
+	int totalTextHeight = fontSize28.GetStringBounds(ConvertedString32(dialogBoxPtr->textArray[0])).size.y;
+	for (int i = 1; i < 4; i++)
 		if (!dialogBoxPtr->textArray[i].empty())
-			totalTextHeight += fontSize28.GetStringBounds(ConvertedString32(dialogBoxPtr->textArray[i])).size.y + 5;
+			totalTextHeight += dialogBoxPtr->textLineOffsetArray[i - 1];
 
 	olc::vi2d positionBoxCenter = (GetScreenSize() / olc::vi2d(2, 2)) - olc::vi2d(0, totalTextHeight / 2);
 	FillRectDecal(positionTemp, dialogBoxPtr->size, olc::GREY);
 	DrawRectDecal(positionTemp, dialogBoxPtr->size, olc::BLACK);
 	DrawRectDecal(positionTemp + olc::vi2d(6, 6), dialogBoxPtr->size - olc::vi2d(12, 12), olc::BLACK);
 	DrawRectDecal(positionTemp + olc::vi2d(7, 7), dialogBoxPtr->size - olc::vi2d(14, 14), olc::BLACK);
+	
 	RenderStringCentered(dialogBoxPtr->textArray[0], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[0], positionBoxCenter);
-	if (!dialogBoxPtr->textArray[1].empty())
-		RenderString(dialogBoxPtr->textArray[1], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[1], dialogBoxPtr->textObjArray[0].posOffset + olc::vi2d(0, 35));
-	if (!dialogBoxPtr->textArray[2].empty())
-		RenderString(dialogBoxPtr->textArray[2], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[2], dialogBoxPtr->textObjArray[1].posStart + olc::vi2d(0, 35));
+	int currentTextStartX = dialogBoxPtr->textObjArray[0].posOffset.x;
+	int currentTextStartY = positionBoxCenter.y;
+	for (int i = 1; i < 4; i++)
+	{
+		if (!dialogBoxPtr->textArray[i].empty())
+		{
+			currentTextStartY += dialogBoxPtr->textLineOffsetArray[i - 1];
+			if (dialogBoxPtr->textCenteredArray[i])
+			{
+				RenderStringCentered(dialogBoxPtr->textArray[i], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[i], { positionBoxCenter.x, currentTextStartY });
+				currentTextStartX = dialogBoxPtr->textObjArray[i].posOffset.x;
+			}
+			else
+				RenderString(dialogBoxPtr->textArray[i], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[i], { currentTextStartX, currentTextStartY });
+		}
+	}
+
+	//RenderStringCentered(dialogBoxPtr->textArray[0], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[0], positionBoxCenter);
+	//if (!dialogBoxPtr->textArray[1].empty())
+	//	RenderString(dialogBoxPtr->textArray[1], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[1], dialogBoxPtr->textObjArray[0].posOffset + olc::vi2d(0, 35));
+	//if (!dialogBoxPtr->textArray[2].empty())
+	//	RenderString(dialogBoxPtr->textArray[2], &fontSize28, olc::BLACK, &dialogBoxPtr->textObjArray[2], dialogBoxPtr->textObjArray[1].posStart + olc::vi2d(0, 35));
+
+	dialogBoxForegroundPtr = dialogBoxPtr;
 }
 
 void DragonWx::RenderCenteredWxCondition(olc::vf2d centeredPos, olc::Decal* decalToDraw, textObject* textObj)
@@ -2151,7 +2093,33 @@ void DragonWx::MidnightDailyReset()
 	{
 		rainEventStartTime = 0;
 		rainEventStopTime = 0;
+		rainGaugeCapacity.ResetCapacity();
 	}
+}
+
+void DragonWx::ResetAllStatistics()
+{
+	outdoorSensor.temperature.Reset();
+	outdoorSensor.humidity.Reset();
+
+	indoorSensor.temperature.Reset();
+	indoorSensor.humidity.Reset();
+
+	rainfallTotalToday.SetZero();
+	if (!activeRainfallEvent)
+	{
+		rainEventStartTime = 0;
+		rainEventStopTime = 0;
+		rainGaugeCapacity.ResetCapacity();
+	}
+	rainfallTotalEvent.SetZero();
+	dequeWindSpeedSamples.clear();
+	windSpeedValue.average.Clear();
+	windSpeedValue.peak.Clear();
+	dequeOutdoorTemps.clear();
+	dequeOutdoorHumidity.clear();
+	decalTrendOutdoorTemp = renderableTrendArrowSteady.Decal();
+	decalTrendOutdoorHumidity = renderableTrendArrowSteady.Decal();
 }
 
 bool DragonWx::LoadWebWxAssets(wxWebEntry* wxDataEntry, olc::Decal* decalTarget)

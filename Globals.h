@@ -4,8 +4,8 @@
 
 // Debug-related variables
 #ifdef _DEBUG
-inline bool useRealPipe = true;
-inline bool useRealWebRequests = true;
+inline bool useRealPipe = false;
+inline bool useRealWebRequests = false;
 inline bool fullscreenToggle = false;
 #else
 inline bool useRealPipe = true;
@@ -25,7 +25,7 @@ inline std::string sdrExtraArguments, sdrGainSetting, sdrAntennaSetting, strWxSt
 inline std::u32string tempString32;
 inline constexpr bool metricUnits = true;
 inline constexpr bool imperialUnits = false;
-inline bool failedExecRTL433 = false;
+inline bool rtl433_failedExecState = false;
 inline bool rtl433_pipeIsRunning = false;
 inline bool appExitRequested = false;
 inline bool appShouldExit = false;
@@ -35,7 +35,7 @@ inline bool currentUnits = false;
 inline bool webWxEnabled = false;
 inline bool settingsPageIsForeground = false;
 inline bool infoPageIsForeground = false;
-inline bool showNoValidConfigMsg = false;
+inline bool invalidConfigFileState = false;
 inline double tempFloat;
 inline int packetSequenceNum = -1;
 inline float elapsedTimeCounter = 0.0f;
@@ -99,13 +99,16 @@ inline std::deque<float> dequeWindDirections, dequeOutdoorTemps, dequeOutdoorHum
 inline float windDirAnimatedPosition, windDirHalfDistance, windDirDistanceLeft, windDirAnimatedSpeed;
 inline bool windAnimationIsMoving = false, windAnimationReversed = false, windAnimationDirPositive;
 inline floatPrevCur rainfallSensorValue = { undefinedFloatValue, undefinedFloatValue };
-inline rainfallAmountValuePair rainfallTotalToday, rainfallTotalEvent, rainfallRatePerHour;
+inline rainfallAmountValuePair rainfallTotalToday, rainfallTotalEvent;
+//inline rainfallAmountValuePair rainfallRatePerHour;
 //inline floatPrevCur rainfallDataValueInches = { undefinedFloatValue, undefinedFloatValue };
 //inline floatRainUnits rainfallTotalToday = { 0.0, 0.0 }, rainfallTotalEvent = { 0.0, 0.0 };
 inline rainGaugeStruct rainGaugeCapacity;
-inline std::deque<float> dequeRainRateSamples;
+//inline std::deque<float> dequeRainRateSamples;
+inline rainfallRateStruct rainfallData;
 inline std::time_t rainEventStartTime = 0, rainEventStopTime = 0, rainEventLastUpdateTime = 0;
 inline const std::time_t rainEventClearedInterval = (120 * 60);      // Measured in seconds
+inline const std::time_t rainRateClearedInterval = (45 * 60);        // Measured in seconds
 inline intRangeStruct lightningStrikeCount, lightningStrikeDistance, uvIndex, lightLevelLux;
 
 inline const int batteryStatusLow = 0;

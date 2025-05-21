@@ -31,12 +31,12 @@
 
 int main()
 {
-	showNoValidConfigMsg = !LoadConfigFile();
+	invalidConfigFileState = !LoadConfigFile();
 
-	if (useRealPipe && !StartPipeRTL433())
+	if (useRealPipe && !invalidConfigFileState && !StartPipeRTL433())
 	{
 		PRINT_DEBUG("Failed to run external command.\n");
-		failedExecRTL433 = true;
+		rtl433_failedExecState = true;
 	}
 	
 	if (!useRealWebRequests)
@@ -52,8 +52,11 @@ int main()
 
 	PRINT_DEBUG("Pixel Game Engine exited.\n");
 
-	ClosePipeRTL433();
-	StopThreadRTL433();
+	if (rtl433_pipeIsRunning)
+	{
+		ClosePipeRTL433();
+		StopThreadRTL433();
+	}
 
 	return 0;
 }
@@ -111,20 +114,7 @@ bool ClosePipeRTL433()
 	#endif
 	return true;
 }
-/*
-bool isRunningPipeRTL433(ProcessHandle& proc)
-{
-	DWORD exitCode, error;
-	if (GetExitCodeProcess(proc.hProcess, &exitCode))
-	{
-		if (exitCode == STILL_ACTIVE)
-			return true;
-	}
-	else
-		error = GetLastError();
-	return false;
-}
-*/
+
 bool GetOutputRTL433()
 {
 #if defined(_WIN32) && defined(USE_WINDOWS_PIPE)
@@ -327,7 +317,7 @@ void readWeatherData()
 											rainfallSensorValue.current = jsonWxTelemetry["rain_in"];
 										if (rainfallSensorValue.previous != undefinedFloatValue)
 										{
-											double rainfallDeltaValue = 0.0;
+											float rainfallDeltaValue = 0.0;
 											if (rainfallSensorValue.current > rainfallSensorValue.previous)
 												rainfallDeltaValue = (rainfallSensorValue.current - rainfallSensorValue.previous);
 											else if (rainfallSensorValue.current < rainfallSensorValue.previous)
@@ -346,16 +336,18 @@ void readWeatherData()
 													rainEventStopTime = 0;
 													//rainfallTotalEvent.inches = 0.0;
 												}
+
+												rainfallData.Update(std::time(nullptr), rainfallDeltaValue, imperialUnits);
 												rainEventLastUpdateTime = std::time(nullptr);
+
 												rainfallTotalToday.AddValue(rainfallDeltaValue, imperialUnits);
 												rainfallTotalEvent.AddValue(rainfallDeltaValue, imperialUnits);
-												//rainfallTotalToday.inches += rainfallDeltaValue;
-												//rainfallTotalEvent.inches += rainfallDeltaValue;
+
+												if (rainfallTotalToday.inches >= (rainGaugeCapacity.inches * 0.90f))
+													rainGaugeCapacity.GrowCapacity();
 											}
 
-											if (rainfallTotalToday.inches > (rainGaugeCapacity.inches * 0.90f))
-												rainGaugeCapacity.GrowCapacity();
-
+											/*
 											if (dequeRainRateSamples.size() >= 20)
 												dequeRainRateSamples.pop_front();
 											dequeRainRateSamples.push_back(rainfallDeltaValue);
@@ -366,7 +358,7 @@ void readWeatherData()
 											for (int i = 0; i < dequeRainRateSamples.size(); i++)
 												PRINT_DEBUG("%.2f ", dequeRainRateSamples.at(i));
 											PRINT_DEBUG("\n\x1b[0m");
-
+											*/
 										}
 										rainfallSensorValue.previous = rainfallSensorValue.current;
 										PRINT_DEBUG("%s \x1b[1;34mOutdoor Rainfall: %.2f inches\n\x1b[0m", GetTimestamp().c_str(), rainfallTotalToday.inches);
@@ -393,7 +385,7 @@ void readWeatherData()
 									if (jsonWxTelemetry.contains("lux"))
 									{
 										lightLevelLux.Update(jsonWxTelemetry["lux"]);
-										PRINT_DEBUG("%s Outdoor Light Level (Lux): %u\n", GetTimestamp().c_str(), lightLevelLux.current);
+										PRINT_DEBUG("%s Outdoor Light Level (Lux): %u (Raw JSON: %s)\n", GetTimestamp().c_str(), lightLevelLux.current, jsonWxTelemetry["lux"].dump());
 									}
 
 									if (jsonWxTelemetry.contains("battery_ok"))
@@ -410,17 +402,6 @@ void readWeatherData()
 							}
 							else if (jsonWxTelemetry["id"].dump() == indoorSensor.ID)
 							{
-								// Debug timer so console isn't spammed with repetitive text
-								/*
-								indoorTelemetryTimerCurrent = std::chrono::steady_clock::now();
-								if ((indoorTelemetryTimerCurrent - indoorTelemetryTimerPrevious) >= telemetryTimeoutPeriod)
-								{
-									newIndoorTelemetry = true;
-									indoorTelemetryTimerPrevious = indoorTelemetryTimerCurrent;
-								}
-								else
-									newIndoorTelemetry = false;
-								*/
 								if (jsonWxTelemetry.contains("time") && (jsonWxTelemetry["time"] != indoorPacketTimestamp.previous))
 								{
 									indoorPacketTimestamp.current = jsonWxTelemetry["time"];
@@ -495,17 +476,6 @@ bool StopThreadRTL433()
 		return false;
 }
 
-std::string getOrdinalSuffix(int day)
-{
-	if (day % 10 == 1 && day % 100 != 11)
-		return "st";
-	if (day % 10 == 2 && day % 100 != 12)
-		return "nd";
-	if (day % 10 == 3 && day % 100 != 13)
-		return "rd";
-	return "th";
-}
-
 void CalculateFeelsLikeMetrics()
 {
 	float tempC = outdoorSensor.temperature.current.GetValue(metricUnits);
@@ -552,49 +522,7 @@ void CalculateFeelsLikeMetrics()
 		calculatedApparentTemp.SetValue(tempC + (actualVaporPressure * 0.33f) - (windSpeedMetersPerSecond * 0.7f) - 4.0f, metricUnits);
 	}
 }
-/*
-void CalculateDewpoint(double tempC, int relativeHumidity, double measuredPressure_hPa)
-{
-	// If input parameters are invalid, just return undefinedValue
-	if ((tempC == undefinedFloatValue) || (relativeHumidity == undefinedFloatValue))
-		return;
 
-	saturationVaporPressure = referenceVaporPressure * std::exp((magnusCoefficient * tempC) / (tempC + magnusTempOffset));
-	// Next calculate the "Actual Vapor Pressure"
-	actualVaporPressure = relativeHumidity * (saturationVaporPressure / 100.0f) * (measuredPressure_hPa / standardPressure_hPa);
-	// Next calculate our actual dewpoint in celsius
-	dewpointValueC = (magnusTempOffset * std::log(actualVaporPressure / referenceVaporPressure)) / (magnusCoefficient - std::log(actualVaporPressure / referenceVaporPressure));
-	dewpointValueF = ConvertedTempCtoF(dewpointValueC);
-}
-
-void CalculateHeatIndex(double tempF, int relHumidity)
-{
-	calculatedHeatIndexF = heatIndexConst1 + (heatIndexConst2 * tempF) + (heatIndexConst3 * relHumidity) + (heatIndexConst4 * tempF * relHumidity) +
-		(heatIndexConst5 * tempF * tempF) + (heatIndexConst6 * relHumidity * relHumidity) + (heatIndexConst7 * tempF * tempF * relHumidity) +
-		(heatIndexConst8 * tempF * relHumidity * relHumidity) + (heatIndexConst9 * tempF * tempF * relHumidity * relHumidity);
-	calculatedHeatIndexC = ConvertedTempFtoC(calculatedHeatIndexF);
-}
-
-void CalculateWindChill(double tempF, double tempC, double windSpeedMPH, double windSpeedKPH)
-{
-	// First do the calculation based off of Fahrenheit/MPH units 
-	float windWithCoeffecient = std::pow(windSpeedMPH, windChillCoEffecient);
-	calculatedWindChillF = (windChillBaselineF + (windChillTempContrib * tempF) - (windChillSpeedFactorF1 * windWithCoeffecient) + (windChillSpeedFactorF2 * tempF * windWithCoeffecient));
-	// Now do the calculation for Metric scale
-	windWithCoeffecient = std::pow(windSpeedKPH, windChillCoEffecient);
-	calculatedWindChillC = (windChillBaselineC + (windChillTempContrib * tempC) - (windChillSpeedFactorC1 * windWithCoeffecient) + (windChillSpeedFactorC2 * tempC * windWithCoeffecient));
-}
-
-static void CalculateApparentTemperature(double tempC, double windSpeedKPH)
-{
-	if (actualVaporPressure == undefinedFloatValue)
-		return;
-
-	float windSpeedMetersPerSecond = (windSpeedKPH * 1000.0f) / 3600.0f;
-	calculatedApparentTempC = tempC + (actualVaporPressure * 0.33f) - (windSpeedMetersPerSecond * 0.7f) - 4.0f;
-	calculatedApparentTempF = ConvertedTempCtoF(calculatedApparentTempC);
-}
-*/
 float CalculateTrendSlope(std::deque<float>* dequeSource)
 {
 	float ySum = 0, xySum = 0;
@@ -614,61 +542,6 @@ double ConvertedTempFtoC(float tempF)
 
 double degreesToRadians(double degrees)
 { return (degrees * (std::numbers::pi / 180.0)); }
-/*
-void UpdateHighLowValues(double sourceValue, temperatureStruct* destHighLowRange)
-{
-	if ((destHighLowRange->high == undefinedFloatValue) || (sourceValue > destHighLowRange->high))
-		destHighLowRange->high = sourceValue;
-	if ((destHighLowRange->low == undefinedFloatValue) || (sourceValue < destHighLowRange->low))
-		destHighLowRange->low = sourceValue;
-}
-
-void UpdateHighLowValues(int sourceValue, intRangeStruct* destHighLowRange)
-{
-	if ((destHighLowRange->high == -1) || (sourceValue > destHighLowRange->high))
-		destHighLowRange->high = sourceValue;
-	if ((destHighLowRange->low == -1) || (sourceValue < destHighLowRange->low))
-		destHighLowRange->low = sourceValue;
-}
-*/
-
-/*
-size_t jsonGetParameter(std::string keyword)
-{ return jsonGetParameter(keyword, wxDataMessage, 0); }
-
-size_t jsonGetParameter(std::string keyword, std::string jsonStringBuffer, size_t startPos)
-{
-	//if (keyword == "id")
-	//	PRINT_DEBUG("breakpoint\n");
-	size_t keywordStart, fieldDivider, dataStart, dataEnd;
-	// Add quote-marks around the keyword
-	keyword.insert(keyword.begin(), '\"');
-	keyword.push_back('\"');
-	keywordStart = jsonStringBuffer.find(keyword, startPos);
-	if (keywordStart == std::string::npos)
-		return 0;
-	
-	fieldDivider = jsonStringBuffer.find(':', keywordStart);
-	if (fieldDivider == std::string::npos)
-		return 0;
-
-	dataStart = jsonStringBuffer.find_first_not_of(' ', fieldDivider + 1);
-	if (dataStart == std::string::npos)
-		return 0;
-
-	dataEnd = jsonStringBuffer.find_first_of(",\n\r", dataStart);
-	if (dataEnd == std::string::npos)
-		return 0;
-
-	jsonParameterValue = jsonStringBuffer.substr(dataStart, (dataEnd - dataStart));
-
-	// If value is in quotes, strip them off
-	if ((jsonParameterValue.front() == '\"') && (jsonParameterValue.back() == '\"'))
-		std::erase(jsonParameterValue, '\"');
-
-	return dataStart;
-}
-*/
 
 bool LoadConfigFile()
 {
@@ -719,36 +592,6 @@ bool LoadConfigFile()
 						}
 					}
 				}
-
-				/*
-				if (strParamName == "RTL433_PATH")
-					pathToExec = strParamValue;
-				else if (strParamName == "RTL433_PARAMS")
-					sdrExtraArguments = strParamValue;
-				else if (strParamName == "SDR_GAIN")
-					sdrGainSetting = strParamValue;
-				else if (strParamName == "SDR_ANTENNA")
-					sdrAntennaSetting = strParamValue;
-				else if (strParamName == "FULLSCREEN")
-					fullscreenToggle = std::stoi(strParamValue);
-				else if (strParamName == "UNITS")
-					useMetricUnits = std::stoi(strParamValue);
-				else if (strParamName == "STATION_NAME")
-					strWxStationName = strParamValue;
-				else if (strParamName == "OUTDOOR_SENSOR_ID")
-					outdoorSensor.ID = strParamValue;
-				else if (strParamName == "INDOOR_SENSOR_ID")
-					indoorSensor.ID = strParamValue;
-				else if (strParamName == "LOCATION_LAT")
-					webWxLocationLat = strParamValue;
-				else if (strParamName == "LOCATION_LON")
-					webWxLocationLon = strParamValue;
-				else if (strParamName == "USE_WEB_FORECAST")
-					webWxEnabled = std::stoi(strParamValue);
-				else
-					continue;	// Skips the printf() statement below and moves on to next item in while() loop
-				*/
-
 				PRINT_DEBUG("Debug: Loaded config param %s\n", strParamName.c_str());
 			}
 		}
