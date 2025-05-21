@@ -820,8 +820,9 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 		DrawDecal(titleBoxAboutApp.posStart + olc::vi2d(40, 40), renderableDragonLogo.Decal());
 
-		RenderString32(strTitleAuthorText[0], &fontSize32, olc::WHITE, &textObjectAuthorText[0], titleBoxAboutApp.posStart + olc::vi2d(210, 80));
-		RenderString32(strTitleAuthorText[1], &fontSize32, olc::WHITE, &textObjectAuthorText[1], titleBoxAboutApp.posStart + olc::vi2d(210, 120));
+		positionTemp = RenderStringSegment(strTitleAuthorText[0], &fontSize32, olc::WHITE, &textObjectAuthorText[0], titleBoxAboutApp.posStart + olc::vi2d(210, 80), 12);
+		RenderString(strTitleAuthorText[1], &fontSize28, olc::GREY, &textObjectAuthorText[1], positionTemp);
+		RenderString(strTitleAuthorText[2], &fontSize32, olc::WHITE, &textObjectAuthorText[2], titleBoxAboutApp.posStart + olc::vi2d(210, 120));
 
 		RenderString32(strIntroText[0], &fontSize22, olc::WHITE, &textObjectIntroText[0], { titleBoxAboutApp.posStart.x + 60, 260 });
 		RenderString32(strIntroText[1], &fontSize22, olc::WHITE, &textObjectIntroText[1], { titleBoxAboutApp.posStart.x + 60, 285 });

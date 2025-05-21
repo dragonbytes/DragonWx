@@ -145,7 +145,7 @@ public:
 	textObject textObjectForecastNowLabel, textObjectForecastToday, textObjectForecastTomorrow, textObjectConditionsDesc;
 	textObject textObjectForecastDays[3], textObjForecastToday[3], textObjForecastTomorrow[3];
 
-	textObject textObjectAuthorText[2], textObjectIntroText[5], textObjectThanksTitle, textObjectThanksText[5];
+	textObject textObjectAuthorText[3], textObjectIntroText[5], textObjectThanksTitle, textObjectThanksText[5];
 	textObject textObjAboutAppTitle, textObjAboutAppText[4];
 	textObject textObjectAttribsTitle, textObjectAttribText[5], textObjectAttribURL[5], textObjectSymbols[5];
 
@@ -228,16 +228,16 @@ public:
 
 	std::u32string strLightLevelValue;
 
-	std::u32string strTitleAuthorText[2] = { U"DragonWx  v1.0", U"Written by Todd Wallace" };
+	std::string strTitleAuthorText[3] = { "DragonWx  v1.0", "(Beta)", "Written by Todd Wallace" };
 
 	std::u32string strIntroText[3] = {  U"DragonWx is a graphical frontend for displaying live weather data transmitted by many popular wireless home weather", 
 										U"stations. It was written in C++ and leverages the olcPixelGameEngine library for rendering. It requires a functional install",
-										U"of the open-source SDR tuner/decoder tool RTL_433 in order to work. Refer to the included README for more information." };
+										U"of the open-source SDR tuner/decoder RTL_433 in order to work. Refer to the included README file for more information." };
 
 	std::u32string strAboutApp[4] = {	U"The idea for this project came out of my frustration with the stock proprietary display units that ship with alot of the home",
 										U"personal weather stations. In my experiences, they proved to either be unreliable, hard to view at certain angles, or would",
 										U"just fail prematurely. I have a background in coding and knew what SDRs could do from being a Ham Radio operator, so I",
-										U"decided to put them all together and make my own weather station display!" };
+										U"decided to put them all together and make my OWN weather station display!" };
 
 	std::u32string strThanksText[2] = { U"Special thanks to Kirstin Stich for her invaluable insight/input on the look and feel of the app, and to everyone on the ",
 										U"OneLoneCoder Discord for all your help, advice, and patience with my coding questions! Thank you very much!" };
