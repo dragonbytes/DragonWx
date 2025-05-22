@@ -334,7 +334,7 @@ bool DragonWx::OnUserCreate()
 								{ true, true }, { 50, 35 } };
 
 	dialogBoxFailedExecCmd =	{ rtl433_failedExecState, { 550, 180 },
-								{ "Could not run RTL433 executable. Make", "sure the \"Exec Path\" in your Settings", "points to a RTL433 program file." },
+								{ "Could not run RTL433 executable. Make sure", "the \"Exec Path\" in your Settings points to an", "accessible RTL433 program file." },
 								{ true, false, false }, { 35, 35 } };
 
 	dialogBoxInvalidValue =		{ false, { 300, 100 },

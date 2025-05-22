@@ -4,7 +4,7 @@
 
 // Debug-related variables
 #ifdef _DEBUG
-inline bool useRealPipe = false;
+inline bool useRealPipe = true;
 inline bool useRealWebRequests = false;
 inline bool fullscreenToggle = false;
 #else
