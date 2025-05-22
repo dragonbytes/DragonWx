@@ -11,6 +11,7 @@ DragonWx::DragonWx()
 
 bool DragonWx::OnUserCreate()
 {
+	appInitFailed = true;
 	mouseWaitingButtonRelease = false;
 	useFeelsLikeLabel = true;
 	useLuxValue = false;
@@ -44,64 +45,73 @@ bool DragonWx::OnUserCreate()
 
 	//fontMap.emplace(16, olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16));
 
-	fontSize16 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16);
-	fontSize18 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 18);
-	fontSize20 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 20);
-	fontSize22 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 22);
-	fontSize24 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 24);
-	fontSize26 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 26);
-	fontSize28 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 28);
-	fontSize30 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 30);
-	fontSize32 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 32);
-	fontSize40 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 40);
-	fontSize56 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 56);
-	fontSize72 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 72);
-	fontSize96 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 96);
+	if (std::filesystem::exists("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
+	{
+		fontSize16 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16);
+		fontSize18 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 18);
+		fontSize20 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 20);
+		fontSize22 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 22);
+		fontSize24 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 24);
+		fontSize26 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 26);
+		fontSize28 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 28);
+		fontSize30 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 30);
+		fontSize32 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 32);
+		fontSize40 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 40);
+		fontSize56 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 56);
+		fontSize72 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 72);
+		fontSize96 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 96);
+	}
+	else
+	{
+		WriteMsgToErrorLog("Error: Font file not found (Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
+		assetsNotFound = true;
+	}
 
 	spacerFontSize18 = fontSize18.GetStringBounds(U"-").size.x;
 	spacerFontSize24 = fontSize24.GetStringBounds(U"-").size.x;
 	spacerFontSize32 = fontSize32.GetStringBounds(U"-").size.x;
 
-	renderableBackgroundImage.Load("./Images/Background_3840x2160.png");
+	LoadImageFile(renderableBackgroundImage, "./Images/Background_3840x2160.png");
 	renderableAreaBorders.Create(setupWindowSize.x, setupWindowSize.y);
 	renderableRainGaugeOutline.Create(setupWindowSize.x, setupWindowSize.y);
 	renderableSetupScreen.Create(setupWindowSize.x, setupWindowSize.y);
 	renderableInfoScreen.Create(setupWindowSize.x, setupWindowSize.y);
 
-	renderableThermometerIconC.Load("./Images/ThermometerC_44px.png");
-	renderableThermometerIconF.Load("./Images/ThermometerF_44px.png");
+	LoadImageFile(renderableThermometerIconC, "./Images/ThermometerC_44px.png");
+	LoadImageFile(renderableThermometerIconF, "./Images/ThermometerF_44px.png");
 
-	renderableWaterDropIcon.Load("./Images/Humidity_40px.png");
-	renderableRainfallIcon.Load("./Images/Raincloud_32px.png");
-
+	LoadImageFile(renderableWaterDropIcon, "./Images/Humidity_40px.png");
+	LoadImageFile(renderableRainfallIcon, "./Images/Raincloud_32px.png");
 
 	renderableWindDir.Create(46, 46);
 	centerPointWindDir = renderableWindDir.Sprite()->Size() / olc::vi2d(2, 2);
 
-	renderableRainGaugeWater.Load("./Images/RainGaugeWater.png");
+	LoadImageFile(renderableRainGaugeWater, "./Images/RainGaugeWater.png");
 
 	std::string filePathSignalIcon;
 	for (int i = 0; i < 5; i++)
 	{
 		filePathSignalIcon = "./Images/Signal_" + std::to_string(i) + ".png";
-		if (renderableSignalStrength[i].Load(filePathSignalIcon) != olc::rcode::OK)
-			PRINT_DEBUG("Signal Bar icon file missing\m");
+		LoadImageFile(renderableSignalStrength[i], filePathSignalIcon);
 	}
 
 	// Load and setup the sprites/decals for the trending arrows (up, down, and steady)
-	renderableTrendArrowUp.Load("./Images/TrendUp.png");
-	renderableTrendArrowSteady.Load("./Images/TrendSteady.png");
-	renderableTrendArrowDown.Load("./Images/TrendDown.png");
+	LoadImageFile(renderableTrendArrowUp, "./Images/TrendUp.png");
+	LoadImageFile(renderableTrendArrowSteady, "./Images/TrendSteady.png");
+	LoadImageFile(renderableTrendArrowDown, "./Images/TrendDown.png");
 
-	renderableSettingsIcon.Load("./Images/Gear_24px.png");
-	renderableCloseIcon.Load("./Images/Close_24px.png");
-	renderableInfoIcon.Load("./Images/Info_24px.png");
-	renderableDragonLogo.Load("./Images/TekTodd_Logo_160px.png");
+	LoadImageFile(renderableSettingsIcon, "./Images/Gear_24px.png");
+	LoadImageFile(renderableCloseIcon, "./Images/Close_24px.png");
+	LoadImageFile(renderableInfoIcon, "./Images/Info_24px.png");
+	LoadImageFile(renderableDragonLogo, "./Images/TekTodd_Logo_160px.png");
 
-	renderableWebConditionsImage.Load("./Images/Meteocons/Icons/not-available.png");
+	LoadImageFile(renderableWebConditionsImage, "./Images/Meteocons/Icons/not-available.png");
 
 	for (int i = 0; i < 3; i++)
-		renderableWebForecastImages[i].Load("./Images/Meteocons/Icons/not-available.png");
+		LoadImageFile(renderableWebForecastImages[i], "./Images/Meteocons/Icons/not-available.png");
+
+	if (assetsNotFound)
+		return true;
 
 	strFeelsLikeLabel = U"Feels Like";
 
@@ -367,11 +377,39 @@ bool DragonWx::OnUserCreate()
 		webWxRequested = true;		// Trigger the initial Web Weather request
 	}
 
+	appInitFailed = false;
 	return true;
 }
 
 bool DragonWx::OnUserUpdate(float fElapsedTime)
 {
+	if (appInitFailed)
+	{
+		if (errorLogFile.is_open())
+		{
+			olc::Pixel textColor = olc::RED;
+			errorLogFile.seekg(0);
+			Clear(olc::BLACK);
+			positionTemp = { 30, 30 };
+
+			while (std::getline(errorLogFile, tempString))
+			{
+				if (tempString.empty())
+					textColor = olc::WHITE;
+				DrawString(positionTemp, tempString, textColor, 2);
+				positionTemp += olc::vi2d(0, 24);
+			}
+			errorLogFile.close();
+		}
+
+		if (GetMouse(olc::Mouse::LEFT).bPressed)
+		{
+			appExitRequested = true;
+			return false;
+		}
+		return true;
+	}
+
 	if (GetMouse(olc::Mouse::LEFT).bPressed)
 	{
 		positionMouseCursor = GetMousePos();
@@ -2142,41 +2180,22 @@ bool DragonWx::LoadWebWxAssets(wxWebEntry* wxDataEntry, olc::Decal* decalTarget)
 	decalTarget->Update();
 	return true;
 }
-/*
-bool DragonWx::SaveConfigFile()
+
+bool DragonWx::LoadImageFile(olc::Renderable& targetRenderable, std::string targetImagePath)
 {
-	std::ofstream configFile("DragonWx.conf");
-	if (!configFile.is_open())
-	{
-		PRINT_DEBUG("Error: Could not open config file for writing.\n");
-		return false;
-	}
+	olc::rcode resultCode = targetRenderable.Load(targetImagePath);
+	if (resultCode == olc::rcode::OK)
+		return true;
 
-	configFile << "DragonWx Config File v1.0" << std::endl << std::endl;
+	// Strip off the leading "./" in the path for easier readability on-screen
+	if (targetImagePath.substr(0, 2) == "./")
+		targetImagePath.erase(0, 2);
 
-	configFile << "RTL433_PATH=" << pathToExec << std::endl;
-	configFile << "RTL433_PARAMS=" << sdrExtraArguments << std::endl;
-	configFile << "SDR_GAIN=" << sdrGainSetting << std::endl;
-	configFile << "SDR_ANTENNA=" << sdrAntennaSetting << std::endl << std::endl;
+	if (resultCode == olc::rcode::NO_FILE)
+		WriteMsgToErrorLog("Error: Image file not found (" + targetImagePath + ")");
+	else
+		WriteMsgToErrorLog("Error: Couldn't load image file (" + targetImagePath + ")");
 
-	configFile << "OUTDOOR_SENSOR_ID=" << outdoorSensor.ID << std::endl;
-	configFile << "OUTDOOR_TEMP_OFFSET_C=" << outdoorSensor.tempOffset.GetValue(metricUnits) << std::endl;		// Always store the calibration value in Metric Celsius
-	configFile << "OUTDOOR_HUMIDITY_OFFSET=" << outdoorSensor.humidityOffset << std::endl << std::endl;
-
-	configFile << "INDOOR_SENSOR_ID=" << indoorSensor.ID << std::endl;
-	configFile << "INDOOR_TEMP_OFFSET_C=" << indoorSensor.tempOffset.GetValue(metricUnits) << std::endl;		// Always store the calibration value in Metric Celsius
-	configFile << "INDOOR_HUMIDITY_OFFSET=" << indoorSensor.humidityOffset << std::endl << std::endl;
-
-	configFile << "FULLSCREEN=" << fullscreenToggle << std::endl;
-	configFile << "STATION_NAME=" << strWxStationName << std::endl;
-	configFile << "UNITS=" << useMetricUnits << std::endl << std::endl;
-
-	configFile << "USE_WEB_FORECAST=" << webWxEnabled << std::endl;
-	configFile << "LOCATION_LAT=" << webWxLocationLat << std::endl;
-	configFile << "LOCATION_LON=" << webWxLocationLon << std::endl;
-
-	configFile.close();
-
-	return true;
+	assetsNotFound = true;
+	return false;
 }
-*/

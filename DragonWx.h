@@ -57,7 +57,7 @@ public:
 	void MidnightDailyReset();
 	void ResetAllStatistics();
 	bool LoadWebWxAssets(wxWebEntry*, olc::Decal*);
-	//bool SaveConfigFile();
+	bool LoadImageFile(olc::Renderable& , std::string);
 
 	#ifndef _DEBUG
 	olc::SplashScreen splash;

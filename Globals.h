@@ -19,6 +19,8 @@ inline bool useSDRplay = true;
 inline bool debugFunctionFlag = false;
 
 // Application-related constants and variables
+inline std::fstream errorLogFile;
+inline std::string errorLogFilename = "error.log";
 inline char buffer[512], strDateWeekMonthDay[64], strFormattedTime[16], timeFormatCharBuffer[64];
 inline std::string pathToExec, tempString, wxDataMessage, strFullyFormattedDate, strFullyFormattedTime, strRainEventStartTime, strRainEventStopTime;
 inline std::string sdrExtraArguments, sdrGainSetting, sdrAntennaSetting, strWxStationName, webWxLocationLat, webWxLocationLon;                   
@@ -36,11 +38,10 @@ inline bool webWxEnabled = false;
 inline bool settingsPageIsForeground = false;
 inline bool infoPageIsForeground = false;
 inline bool invalidConfigFileState = false;
+inline bool appInitFailed, assetsNotFound = false;
 inline double tempFloat;
 inline int packetSequenceNum = -1;
 inline float elapsedTimeCounter = 0.0f;
-//inline const float undefinedFloatValue = 300.0f;
-//inline const int undefinedIntValue = 300;
 inline const int rainGaugeMarksTotal = 8;
 
 // RTL_433 CLI and thread-related variables

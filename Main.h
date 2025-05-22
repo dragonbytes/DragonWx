@@ -35,6 +35,7 @@ bool GetWebForecast(std::string, std::string*);
 size_t WriteOutCurlResponse(char*, size_t, size_t, std::string*);
 bool LoadConfigFile();
 bool SaveConfigFile();
+void WriteMsgToErrorLog(std::string outputString);
 
 // Debug/testing related functions
 void populateTestData();
@@ -49,6 +50,3 @@ double degreesToRadians(double);
 // Calculation functions
 void CalculateFeelsLikeMetrics();
 float CalculateTrendSlope(std::deque<float>* dequeSource);
-
-// Update functions
-void ApplySensorOffsets(sensorStatus*);

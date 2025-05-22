@@ -31,6 +31,15 @@
 
 int main()
 {
+	// If error log file exists from previous session, delete it
+	if (std::filesystem::exists(errorLogFilename))
+	{
+		if (std::filesystem::remove(errorLogFilename))
+			PRINT_DEBUG("%s found and deleted succesfully.\n", errorLogFilename.c_str());
+		else
+			PRINT_DEBUG("%s found but could NOT be deleted.\n", errorLogFilename.c_str());
+	}
+
 	invalidConfigFileState = !LoadConfigFile();
 
 	if (useRealPipe && !invalidConfigFileState && !StartPipeRTL433())
@@ -57,6 +66,9 @@ int main()
 		ClosePipeRTL433();
 		StopThreadRTL433();
 	}
+
+	if (errorLogFile.is_open())
+		errorLogFile.close();
 
 	return 0;
 }
@@ -784,3 +796,14 @@ static void ReadFileJSON(std::string filePath, std::string* inputBufferPtr)
 	PRINT_DEBUG("Contents of read JSON file:\n\n%s\n", (*inputBufferPtr).c_str());
 }
 #endif
+
+void WriteMsgToErrorLog(std::string outputString)
+{
+	if (!errorLogFile.is_open())
+	{
+		errorLogFile.open(errorLogFilename, std::ios::in | std::ios::out | std::ios::trunc);
+		errorLogFile << "DragonWx encountered a problem during launch." << std::endl << std::endl;
+	}
+
+	errorLogFile << outputString << std::endl;
+}
