@@ -47,6 +47,8 @@ int main()
 	// Eventually I will make the layout all adapative, but for now this makes sure things look right
 	if (fullscreenToggle)
 		isValidResolution = (GetSystemResolution() == olc::vi2d(1280, 720));
+	else
+		isValidResolution = true;
 
 	if (useRealPipe && !invalidConfigFileState && !StartPipeRTL433())
 	{
