@@ -74,7 +74,7 @@ public:
 
 	buttonStruct buttonUnitsToggle, buttonForecastOnOff, buttonResetStats, buttonAboutApp, buttonStartStopRTL433, buttonOk, buttonCancel;
 
-	dialogBox dialogBoxFailedExecCmd, dialogBoxNoValidConfig, dialogBoxInvalidValue, dialogBoxRestartRequired;
+	dialogBox dialogBoxFailedExecCmd, dialogBoxNoValidConfig, dialogBoxInvalidValue, dialogBoxRestartRequired, dialogBoxErrorResolution;
 	dialogBox* dialogBoxForegroundPtr = nullptr;
 
 	float restartPendingElapsed = 0.0f;

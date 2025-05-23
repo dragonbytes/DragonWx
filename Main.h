@@ -19,6 +19,7 @@
 #define PRINT_DEBUG(fmt, ...)
 #endif
 
+olc::vi2d GetSystemResolution();
 #ifdef _WIN32
 bool StartProcess(ProcessHandle&, const char*);
 bool StopProcess(ProcessHandle&);

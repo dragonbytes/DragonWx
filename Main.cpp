@@ -42,6 +42,12 @@ int main()
 
 	invalidConfigFileState = !LoadConfigFile();
 
+	// Since large sections of app layout are fixed pixel coordinates/size, 720p effective resolution is required.
+	// If config file specifies fullscreen but screen resolution is NOT 720p, force windowed mode.
+	// Eventually I will make the layout all adapative, but for now this makes sure things look right
+	if (fullscreenToggle)
+		isValidResolution = (GetSystemResolution() == olc::vi2d(1280, 720));
+
 	if (useRealPipe && !invalidConfigFileState && !StartPipeRTL433())
 	{
 		PRINT_DEBUG("Failed to run external command.\n");
@@ -55,7 +61,7 @@ int main()
 	{
 		PRINT_DEBUG("About to launch Pixel Game Engine...\n");
 		DragonWx demo;
-		if (demo.Construct(1280, 720, 1, 1, fullscreenToggle, true))
+		if (demo.Construct(1280, 720, 1, 1, (fullscreenToggle && isValidResolution), true))
 			demo.Start();
 	}
 
@@ -71,6 +77,19 @@ int main()
 		errorLogFile.close();
 
 	return 0;
+}
+
+olc::vi2d GetSystemResolution()
+{
+	olc::vi2d effectiveResolution;
+
+	#ifdef _WIN32
+	effectiveResolution.x = GetSystemMetrics(SM_CXSCREEN);
+	effectiveResolution.y = GetSystemMetrics(SM_CYSCREEN);
+	#else
+	#endif
+
+	return effectiveResolution;
 }
 
 bool StartPipeRTL433()

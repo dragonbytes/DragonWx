@@ -18,6 +18,7 @@ bool DragonWx::OnUserCreate()
 	useNumericWindDirection = false;
 
 	setupWindowSize = GetWindowSize();
+	PRINT_DEBUG("Debug: Total Screen Size = %u x %u\n", setupWindowSize.x, setupWindowSize.y);
 
 	outdoorSensor.telemetryStarted = false;
 	outdoorSensor.recentlyUpdated = false;
@@ -329,6 +330,10 @@ bool DragonWx::OnUserCreate()
 
 	UpdateAreaBordersSprite();
 
+	dialogBoxErrorResolution =	{ !isValidResolution, { 580, 180 },
+								{ "Fullscreen Mode can only be enabled when the", "effective screen resolution is 1280 x 720.", "Future versions should not have this limitation."},
+								{ true, false, false }, { 35, 35 } };
+
 	dialogBoxNoValidConfig =	{ invalidConfigFileState, { 560, 200 },
 								{ "Welcome to DragonWx!", "Please click the Gear icon to enter Setup Mode", "and configure your initial settings." },
 								{ true, true }, { 50, 35 } };
@@ -531,11 +536,6 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 				settingsPageIsForeground = false;
 				dialogBoxInvalidValue.showInForeground = false;
 			}
-		}
-		else if (positionMouseCursor.y < screenPaddingOffsetY)
-		{
-			fullscreenToggle = !fullscreenToggle;
-			return false;
 		}
 		else if (mouseWithinArea(positionSettingsIcon, renderableSettingsIcon.Sprite()->Size()))
 		{
@@ -744,7 +744,12 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	// Render blank background image
 	DrawDecal({ 0.0f, 0.0f }, renderableBackgroundImage.Decal(), {0.333f, 0.333f});
 
-	if (dialogBoxFailedExecCmd.showInForeground)
+	if (dialogBoxErrorResolution.showInForeground)
+	{
+		ShowCenteredDialogBox(&dialogBoxErrorResolution);
+		return true;
+	}
+	else if (dialogBoxFailedExecCmd.showInForeground)
 	{
 		ShowCenteredDialogBox(&dialogBoxFailedExecCmd);
 		return true;
