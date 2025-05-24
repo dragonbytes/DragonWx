@@ -563,12 +563,8 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		else if ((lightLevelLux.current != undefinedIntValue) && (mouseWithinArea(positionLightLevelValue, fontSize24.GetStringBounds(strLightLevelValue).size) ||
 			mouseWithinArea(positionLightLevelLabel, fontSize24.GetStringBounds(U"Light").size)))
 				useLuxValue = !useLuxValue;
-		else if ((textObjectWindDirName.width > 0) && mouseWithinArea(windDirectionTextStart, windDirectionTextSize))
-		{
+		else if ((windDirectionTextSize.x > 0) && mouseWithinArea(windDirectionTextStart, windDirectionTextSize))
 			useNumericWindDirection = !useNumericWindDirection;
-			windDirectionTextStart = posWindDirectionText - textObjectWindDirName.posOffset;
-			windDirectionTextSize = { textObjectWindDirName.width, textObjectWindDirName.height };
-		}
 		else if (positionMouseCursor.y < (screenWindowSize.y * 0.02f))
 		{
 			if (isValidResolution)
@@ -1081,12 +1077,14 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	DrawWindDirectionArrow(dequeWindDirections.at(0), windArrowColors[0]);
 	std::string strWindDirectionText;
 	if (useNumericWindDirection)
-		strWindDirectionText = std::format("{:.0f}", dequeWindDirections.at(0)) + "\u00B0";
+	{
+		RenderStringCentered(std::format("{:.0f}", dequeWindDirections.at(0)), &fontSize40, olc::GREY, &textObjWindDirName, posWindDirectionText);
+		RenderString32(U"\u00B0", &fontSize40, olc::GREY, &textObjWindDirDegreeSymbol, textObjWindDirName.posOffset + olc::vi2d(textObjWindDirName.width + 2, 0));
+	}
 	else
-		strWindDirectionText = GetWindDirectionName(dequeWindDirections.at(0));
-	RenderStringCentered(strWindDirectionText, &fontSize40, olc::GREY, &textObjectWindDirName, posWindDirectionText);
-	windDirectionTextStart = posWindDirectionText - textObjectWindDirName.posOffset;
-	windDirectionTextSize = { textObjectWindDirName.width, textObjectWindDirName.height };
+		RenderStringCentered(GetWindDirectionName(dequeWindDirections.at(0)), &fontSize40, olc::GREY, &textObjWindDirName, posWindDirectionText);
+	windDirectionTextStart = textObjWindDirName.posOffset;
+	windDirectionTextSize = { textObjWindDirName.width, textObjWindDirName.height };
 
 	/*
 	if (dequeWindDirections.size() > 1)

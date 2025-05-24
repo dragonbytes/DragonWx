@@ -131,7 +131,7 @@ public:
 	textObject textObjectIndoorHumidityUnits, textObjectIndoorHumidityValue;
 
 	textObject windSpeedUnitsText, textObjectLabelWindSpeedAvg, windSpeedText, textObjectWindSpeedAvg, textObjectWindSpeedPeakLabel, textObjectWindSpeedPeakValue;
-	textObject textObjectWindSpeedUnits, textObjectWindDirName;
+	textObject textObjectWindSpeedUnits, textObjWindDirName, textObjWindDirDegreeSymbol;
 
 	textObject textObjectRainfallLabel, textObjectRainfallTodayLabel, textObjectRainfallRateLabel, textObjectRainTodayUnitsLabel, textObjectRainfallRateUnits;
 	textObject textObjectRainfallValue, textObjectRainfallRateValue, textObjectRainGaugeUnits[rainGaugeMarksTotal + 1];
