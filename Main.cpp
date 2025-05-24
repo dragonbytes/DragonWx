@@ -41,14 +41,7 @@ int main()
 	}
 
 	invalidConfigFileState = !LoadConfigFile();
-
-	// Since large sections of app layout are fixed pixel coordinates/size, 720p effective resolution is required.
-	// If config file specifies fullscreen but screen resolution is NOT 720p, force windowed mode.
-	// Eventually I will make the layout all adapative, but for now this makes sure things look right
-	if (fullscreenToggle)
-		isValidResolution = (GetSystemResolution() == olc::vi2d(1280, 720));
-	else
-		isValidResolution = true;
+	isValidResolution = (GetSystemResolution() == olc::vi2d(1280, 720));
 
 	if (useRealPipe && !invalidConfigFileState && !StartPipeRTL433())
 	{
@@ -59,12 +52,17 @@ int main()
 	if (!useRealWebRequests)
 		GetWebForecast(strLocationURL, &curlResponseBuffer);
 
-	while (!appShouldExit)
+	while (appShouldStart)
 	{
 		PRINT_DEBUG("About to launch Pixel Game Engine...\n");
-		DragonWx demo;
-		if (demo.Construct(1280, 720, 1, 1, (fullscreenToggle && isValidResolution), true))
-			demo.Start();
+		appShouldStart = false;			// By default, the app should NOT restart itself when appInstance finishes
+
+		DragonWx appInstance;
+		// Since large sections of the app layout are currently fixed pixel coordinates and size, 720p effective resolution is required.
+		// So if config file specifies fullscreen but screen resolution is NOT 720p, force windowed mode. Eventually I plan to make the
+		// layouts all adapative to resolution, but for now this makes sure things will look right for the user.
+		if (appInstance.Construct(1280, 720, 1, 1, (fullscreenToggle && isValidResolution), true))
+			appInstance.Start();
 	}
 
 	PRINT_DEBUG("Pixel Game Engine exited.\n");

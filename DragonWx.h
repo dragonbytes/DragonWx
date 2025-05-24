@@ -179,7 +179,7 @@ public:
 	olc::vf2d positionForecastAreaStart, positionForecastAreaSize, positionAboutAppBoxStart, positionAboutAppBoxSize;
 	olc::vf2d positionSystemDate, positionSystemTime, positionCloseIcon, positionSettingsIcon;
 
-	olc::vi2d setupWindowSize;
+	olc::vi2d screenWindowSize;
 	int setupWindowLeftColumnX, setupWindowMiddleColumnX, setupWindowRightColumnX, setupWindowMiddleRowY, setupWindowBottomRowY;
 	int setupSensorBoxLeftOffsetX, setupSensorBoxRightOffsetX, setupSensorBoxTopOffsetY, setupSensorBoxBottomOffsetY;
 	int setupUnitsLabelY, setupWebWxLabelY, setupSdrExecPathLabelY;

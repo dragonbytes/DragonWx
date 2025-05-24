@@ -6,7 +6,7 @@
 // Override base class with your custom functionality
 DragonWx::DragonWx()
 {
-	sAppName = "DragonWeather";
+	sAppName = "DragonWx";
 }
 
 bool DragonWx::OnUserCreate()
@@ -17,8 +17,8 @@ bool DragonWx::OnUserCreate()
 	useLuxValue = false;
 	useNumericWindDirection = false;
 
-	setupWindowSize = GetWindowSize();
-	PRINT_DEBUG("Debug: Total Screen Size = %u x %u\n", setupWindowSize.x, setupWindowSize.y);
+	screenWindowSize = GetWindowSize();
+	PRINT_DEBUG("Debug: Total Screen Size = %u x %u\n", screenWindowSize.x, screenWindowSize.y);
 
 	outdoorSensor.telemetryStarted = false;
 	outdoorSensor.recentlyUpdated = false;
@@ -73,10 +73,10 @@ bool DragonWx::OnUserCreate()
 	spacerFontSize32 = fontSize32.GetStringBounds(U"-").size.x;
 
 	LoadImageFile(renderableBackgroundImage, "./Images/Background_3840x2160.png");
-	renderableAreaBorders.Create(setupWindowSize.x, setupWindowSize.y);
-	renderableRainGaugeOutline.Create(setupWindowSize.x, setupWindowSize.y);
-	renderableSetupScreen.Create(setupWindowSize.x, setupWindowSize.y);
-	renderableInfoScreen.Create(setupWindowSize.x, setupWindowSize.y);
+	renderableAreaBorders.Create(screenWindowSize.x, screenWindowSize.y);
+	renderableRainGaugeOutline.Create(screenWindowSize.x, screenWindowSize.y);
+	renderableSetupScreen.Create(screenWindowSize.x, screenWindowSize.y);
+	renderableInfoScreen.Create(screenWindowSize.x, screenWindowSize.y);
 
 	LoadImageFile(renderableThermometerIconC, "./Images/ThermometerC_44px.png");
 	LoadImageFile(renderableThermometerIconF, "./Images/ThermometerF_44px.png");
@@ -215,9 +215,9 @@ bool DragonWx::OnUserCreate()
 	DrawRainGaugeOutlines(positionRainGauge - olc::vf2d(1, 1), rainGaugeTotalSize + olc::vf2d(1, 1), 10, rainGaugeBorderColor);
 
 	olc::vi2d setupSensorBoxSize = { 350, 300 };
-	int setupOutdoorTitleBoxX = setupWindowSize.x * 0.04f;
-	int setupIndoorTitleBoxX = setupWindowSize.x * 0.37f;
-	int setupSensorTitleBoxesY = setupWindowSize.y * 0.13f;
+	int setupOutdoorTitleBoxX = screenWindowSize.x * 0.04f;
+	int setupIndoorTitleBoxX = screenWindowSize.x * 0.37f;
+	int setupSensorTitleBoxesY = screenWindowSize.y * 0.13f;
 	int inputBoxHeight = 40;
 
 	titleBoxSetupOutdoor = { U"Outdoor Sensor", &fontSize30, areasBorderColor, { setupOutdoorTitleBoxX, setupSensorTitleBoxesY }, setupSensorBoxSize, 20, 45};
@@ -229,8 +229,8 @@ bool DragonWx::OnUserCreate()
 	DrawBoxTitle(&titleBoxSetupIndoor, &renderableSetupScreen);
 	renderableSetupScreen.Decal()->Update();
 
-	setupWindowMiddleRowY = setupWindowSize.y * 0.3f;
-	setupWindowBottomRowY = setupWindowSize.y * 0.59f;
+	setupWindowMiddleRowY = screenWindowSize.y * 0.3f;
+	setupWindowBottomRowY = screenWindowSize.y * 0.59f;
 
 	setupSensorBoxLeftOffsetX = setupSensorBoxSize.x * 0.11f;
 	setupSensorBoxRightOffsetX = setupSensorBoxSize.x * 0.48f;
@@ -239,14 +239,14 @@ bool DragonWx::OnUserCreate()
 
 	setupWindowLeftColumnX = setupOutdoorTitleBoxX + setupSensorBoxLeftOffsetX;
 	setupWindowMiddleColumnX = setupIndoorTitleBoxX + setupSensorBoxLeftOffsetX;
-	setupWindowRightColumnX = setupWindowSize.x * 0.71f;
+	setupWindowRightColumnX = screenWindowSize.x * 0.71f;
 
 	setupUnitsLabelY = setupSensorTitleBoxesY;
 	setupWebWxLabelY = setupWindowMiddleRowY;
 
 	positionSetupOutdoorCalLabel = titleBoxSetupOutdoor.posStart + olc::vi2d(setupSensorBoxLeftOffsetX, setupSensorBoxBottomOffsetY);
 	positionSetupIndoorCalLabel = titleBoxSetupIndoor.posStart + olc::vi2d(setupSensorBoxLeftOffsetX, setupSensorBoxBottomOffsetY);
-	setupSdrExecPathLabelY = setupWindowSize.y * 0.74f;
+	setupSdrExecPathLabelY = screenWindowSize.y * 0.74f;
 
 	inputBoxOutdoorID.isEnabled = true;
 	inputBoxOutdoorID.label = { U"Sensor ID", titleBoxSetupOutdoor.posStart + olc::vi2d(setupSensorBoxLeftOffsetX, setupSensorBoxTopOffsetY) };
@@ -304,7 +304,7 @@ bool DragonWx::OnUserCreate()
 
 	int setupOkCancelButtonWidth = 120, setupButtonPaddingX = 20;
 	int setupOkCancelButtonsX = (inputBoxLongitude.value.pos.x + inputBoxLongitude.value.size.x) - (setupOkCancelButtonWidth * 2) - setupButtonPaddingX;
-	int setupButtonsBottomY = setupWindowSize.y - 75;
+	int setupButtonsBottomY = screenWindowSize.y - 75;
 	
 	buttonStartStopRTL433 = { true, &fontSize24, olc::WHITE, { setupWindowLeftColumnX, setupButtonsBottomY }, { 190, inputBoxHeight } };
 	buttonResetStats = { true, &fontSize24, olc::WHITE, { buttonStartStopRTL433.pos.x + buttonStartStopRTL433.size.x + setupButtonPaddingX, setupButtonsBottomY }, { 190, inputBoxHeight }, U"Reset Statistics" };
@@ -330,8 +330,8 @@ bool DragonWx::OnUserCreate()
 
 	UpdateAreaBordersSprite();
 
-	dialogBoxErrorResolution =	{ !isValidResolution, { 580, 180 },
-								{ "Fullscreen Mode can only be enabled when the", "effective screen resolution is 1280 x 720.", "Future versions should not have this limitation."},
+	dialogBoxErrorResolution =	{ (fullscreenToggle && !isValidResolution), { 580, 180 },
+								{ "DragonWx will run in Windowed mode because", "Fullscreen mode currently requires an effective", "screen resolution of 1280 x 720."},
 								{ true, false, false }, { 35, 35 } };
 
 	dialogBoxNoValidConfig =	{ invalidConfigFileState, { 560, 200 },
@@ -408,10 +408,8 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		}
 
 		if (GetMouse(olc::Mouse::LEFT).bPressed)
-		{
-			appExitRequested = true;
 			return false;
-		}
+
 		return true;
 	}
 
@@ -522,6 +520,8 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 					indoorSensor.humidity.offset = std::stoi(inputBoxIndoorCalHumidity.value.text);
 				webWxLocationLat = inputBoxLatitude.value.text;
 				webWxLocationLon = inputBoxLongitude.value.text;
+				std::erase(inputBoxSdrExecPath.value.text, '\"');							// Strip out any potential leading/trailing quotes
+				std::erase(inputBoxSdrParams.value.text, '\"');								// Strip out any potential leading/trailing quotes
 				dialogBoxRestartRequired.showInForeground = ((sdrGainSetting != inputBoxSdrGain.value.text) || (sdrExtraArguments != inputBoxSdrParams.value.text) || (pathToExec != inputBoxSdrExecPath.value.text));
 				sdrGainSetting = inputBoxSdrGain.value.text;
 				sdrExtraArguments = inputBoxSdrParams.value.text;
@@ -557,24 +557,26 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			settingsPageIsForeground = true;
 		}
 		else if (mouseWithinArea(positionCloseIcon, renderableCloseIcon.Sprite()->Size()))
-		{
-			SaveConfigFile();
-			appExitRequested = true;
 			return false;
-		}
 		else if (mouseWithinArea(positionFeelsLikeLabel, fontSize32.GetStringBounds(strFeelsLikeLabel).size))
 			useFeelsLikeLabel = !useFeelsLikeLabel;
-		else if (lightLevelLux.current != undefinedIntValue)
-		{
-			if (mouseWithinArea(positionLightLevelValue, fontSize24.GetStringBounds(strLightLevelValue).size) ||
-				mouseWithinArea(positionLightLevelLabel, fontSize24.GetStringBounds(U"Light").size))
+		else if ((lightLevelLux.current != undefinedIntValue) && (mouseWithinArea(positionLightLevelValue, fontSize24.GetStringBounds(strLightLevelValue).size) ||
+			mouseWithinArea(positionLightLevelLabel, fontSize24.GetStringBounds(U"Light").size)))
 				useLuxValue = !useLuxValue;
-		}
 		else if ((textObjectWindDirName.width > 0) && mouseWithinArea(windDirectionTextStart, windDirectionTextSize))
 		{
 			useNumericWindDirection = !useNumericWindDirection;
 			windDirectionTextStart = posWindDirectionText - textObjectWindDirName.posOffset;
 			windDirectionTextSize = { textObjectWindDirName.width, textObjectWindDirName.height };
+		}
+		else if (positionMouseCursor.y < (screenWindowSize.y * 0.02f))
+		{
+			if (isValidResolution)
+			{
+				fullscreenToggle = !fullscreenToggle;
+				appShouldStart = true;
+				return false;
+			}
 		}
 	}
 	else if (GetMouse(olc::Mouse::RIGHT).bPressed)
@@ -593,11 +595,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	if (!IsTextEntryEnabled())		// Only check for app keyboard-shortcuts if we are not in text entry mode (like while we are in setup menu entering info)
 	{
 		if (GetKey(olc::Key::Q).bHeld)
-		{
-			SaveConfigFile();
-			appExitRequested = true;
 			return false;
-		}
 		else if (GetKey(olc::Key::ESCAPE).bHeld)
 		{
 			if (settingsPageIsForeground)
@@ -1345,7 +1343,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 bool DragonWx::OnUserDestroy()
 {
-	appShouldExit = appExitRequested;
+	SaveConfigFile();
 	return true;
 }
 

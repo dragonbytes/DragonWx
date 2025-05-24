@@ -6,7 +6,7 @@
 #ifdef _DEBUG
 inline bool useRealPipe = true;
 inline bool useRealWebRequests = false;
-inline bool fullscreenToggle = false;
+inline bool fullscreenToggle = true;
 #else
 inline bool useRealPipe = true;
 inline bool useRealWebRequests = true;
@@ -29,8 +29,7 @@ inline constexpr bool metricUnits = true;
 inline constexpr bool imperialUnits = false;
 inline bool rtl433_failedExecState = false;
 inline bool rtl433_pipeIsRunning = false;
-inline bool appExitRequested = false;
-inline bool appShouldExit = false;
+inline bool appShouldStart = true;
 inline bool rtl433_threadRunning = false;
 inline bool activeRainfallEvent = false;
 inline bool currentUnits = false;
