@@ -17,10 +17,10 @@
 #include <windows.h>
 #include <io.h>
 #include <tchar.h>
-#include <curl/curl.h>
 #else
-#include <curl/curl.h>
+#include <X11/Xlib.h>
 #endif
+#include <curl/curl.h>
 #include <cstdio>
 #include <numeric>
 #include <filesystem>
@@ -81,14 +81,25 @@ int main()
 
 olc::vi2d GetSystemResolution()
 {
-	olc::vi2d effectiveResolution;
+	olc::vi2d effectiveResolution = { 0, 0 };
 
 	#ifdef _WIN32
 	effectiveResolution.x = GetSystemMetrics(SM_CXSCREEN);
 	effectiveResolution.y = GetSystemMetrics(SM_CYSCREEN);
 	#else
+	using namespace X11;
+	Display* displayPtr = XOpenDisplay(nullptr);
+	if (displayPtr == nullptr)
+	{
+		PRINT_DEBUG("Error: Failed XOpenDisplay()\n");
+		return effectiveResolution;
+	}
+	Screen* screenPtr = ScreenOfDisplay(displayPtr, DefaultScreen(displayPtr));
+	effectiveResolution = { screenPtr->width, screenPtr->height };
+	XCloseDisplay(displayPtr);
 	#endif
 
+	PRINT_DEBUG("Debug: Fullscreen resolution = %u x %u\n", effectiveResolution.x, effectiveResolution.y);
 	return effectiveResolution;
 }
 
