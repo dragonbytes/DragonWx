@@ -99,7 +99,7 @@ bool StartPipeRTL433()
 		cliFullCommand = sdrExtraArguments;
 		if (!sdrGainSetting.empty())
 			cliFullCommand += " -g" + sdrGainSetting;
-		cliFullCommand += " -R40 -F json";
+		cliFullCommand += " -F json";
 
 		#ifdef _WIN32
 		cliFullCommand = "\"" + pathToExec + "\" -v " + cliFullCommand;

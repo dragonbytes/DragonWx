@@ -55,6 +55,7 @@ For convenience, you may also configure DragonWx manually by editing `DragonWx.c
 Once you have successfully configured DragonWx and it is receiving telemetry from rtl_433, the info on the screen should update every time it receives a new ping from your sensor(s). The time between those pings varies between companies and even specific models, but it's usually between 15 to 45 seconds. There are a few clickable areas on the screen that can give you additional information:
 
 - Click the "Feels Like" label to have it instead show which method is being used to calculate the feels-like temperature. (Wind Chill, Heat Index, Steadman Apparent Temperature, or just the ACTUAL current outdoor temperature). Clicking on it again will revert back to the "Feels Like" catch-all label.
+- Click the Wind Direction value to toggle between Cardinal direction labels (like E, NNW, SW etc) and decimal degrees.
 - If your weather station has a Light Intensity sensor, you can click on the verbal description of how bright it is outside (Overcast, Direct Sun, Twilight, etc) to display the actual value measure in Lux. Clicking again will revert back to the verbal description.
 
 ### Special Thanks
