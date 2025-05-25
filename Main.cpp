@@ -118,20 +118,16 @@ bool StartPipeRTL433()
 		rtl433_pipeIsRunning = StartProcess(procRTL_433, cliFullCommand.c_str());
 		#else
 		pipeRTL_433 = _popen(cliFullCommand.c_str(), "r");
-		if (pipeRTL_433 == nullptr)
-		{
-			PRINT_DEBUG("Failed to run external command.\n");
-			return EXIT_FAILURE;
-		}
+		rtl433_pipeIsRunning = (pipeRTL_433 == nullptr) ? false : true;
+		if (!rtl433_pipeIsRunning)
+			PRINT_DEBUG("Failed to open pipe to rtl_433.\n");
 		#endif
 		#else
 		cliFullCommand = pathToExec + " -v " + cliFullCommand;
 		pipeRTL_433 = popen(cliFullCommand.c_str(), "r");
-		if (pipeRTL_433 == nullptr)
-		{
-			PRINT_DEBUG("Failed to run external command.\n");
-			return EXIT_FAILURE;
-		}
+		rtl433_pipeIsRunning = (pipeRTL_433 == nullptr) ? false : true;
+		if (!rtl433_pipeIsRunning)
+			PRINT_DEBUG("Failed to open pipe to rtl_433.\n");
 		#endif
 
 		PRINT_DEBUG("CLI Full Command = %s\n", cliFullCommand.c_str());
