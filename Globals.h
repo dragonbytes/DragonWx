@@ -36,7 +36,7 @@ inline bool currentUnits = false;
 inline bool webWxEnabled = false;
 inline bool settingsPageIsForeground = false;
 inline bool infoPageIsForeground = false;
-inline bool invalidConfigFileState = false;
+inline bool invalidConfigFileState;
 inline bool appInitFailed, assetsNotFound = false, isValidResolution = false;
 inline double tempFloat;
 inline int packetSequenceNum = -1;

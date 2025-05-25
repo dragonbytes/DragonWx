@@ -317,7 +317,7 @@ bool DragonWx::OnUserCreate()
 	titleBoxOutdoorPanel = { U"Outdoor", &fontSize40, areasBorderColor, positionOutdoorAreaStart, positionOutdoorAreaSize, 20, 45 };
 	titleBoxIndoorPanel = { U"Indoor", &fontSize32, areasBorderColor, positionIndoorAreaStart, positionIndoorAreaSize, 20, 45 };
 	titleBoxRainPanel = { U"Rainfall", &fontSize32, areasBorderColor, positionRainAreaStart, positionRainAreaSize, 20, 44 };
-	titleBoxSensorPanel = { U"Sensor", &fontSize32, areasBorderColor, positionSensorAreaStart, positionSensorAreaSize, 20, 44 };
+	titleBoxSensorPanel = { U"Sensors", &fontSize32, areasBorderColor, positionSensorAreaStart, positionSensorAreaSize, 20, 44 };
 	titleBoxForecastPanel = { U"Forecast", &fontSize32, areasBorderColor, positionForecastAreaStart, positionForecastAreaSize, 20, 50 };
 
 	olc::vi2d boxSize = { 1100, 640 };
@@ -339,7 +339,7 @@ bool DragonWx::OnUserCreate()
 								{ true, true }, { 50, 35 } };
 
 	dialogBoxFailedExecCmd =	{ rtl433_failedExecState, { 550, 180 },
-								{ "Could not run RTL433 executable. Make sure", "the \"Exec Path\" in your Settings points to an", "accessible RTL433 program file." },
+								{ "Could not run rtl_433 executable. Make sure", "the \"Exec Path\" in your Settings points to an", "accessible rtl_433 program file." },
 								{ true, false, false }, { 35, 35 } };
 
 	dialogBoxInvalidValue =		{ false, { 300, 100 },
