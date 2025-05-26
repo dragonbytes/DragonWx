@@ -62,10 +62,14 @@ There are also a few clickable areas on the screen that can give you additional 
 
 ### Errors
 
+- **DragonWx encountered a problem during launch**
+<br><br>
+If you are getting this error message on startup, it's because DragonWx cannot find (or access) one or more of the required graphical assets that should have been bundled with the program. These images/fonts all need to be in their respective directories alongside the executable. The error screen will also have a list of which specific assets could not be found (or accessed) and an "error.log" text file will be generated and saved in the same directory as your DragonWx program file.
+<br>
+
 - **Could Not Run rtl_433 Executable:**
 <br><br>
 Whenever you run DragonWx, it automatically tries to launch the rtl_433 program into the background which is needed for communication with your SDR. If the path you specified to that executable is invalid or can't be found, you will get this error message. Double-check your "Exec Path" is correct in the settings (and that your user has privileges to access/execute it if you are running under linux).
-<br>
 
 ### Warnings
 
