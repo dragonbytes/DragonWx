@@ -108,7 +108,7 @@ olc::vi2d GetSystemResolution()
 
 bool StartPipeRTL433()
 {
-	if (!pathToExec.empty())
+	if (pathToExec.find_first_not_of(" \t\r\n") != std::string::npos)		// This makes sure pathToExec does not ONLY contain whitespace (spaces, tabs, CR, LF only)
 	{
 		cliFullCommand = sdrExtraArguments;
 		if (!sdrGainSetting.empty())
@@ -140,8 +140,10 @@ bool StartPipeRTL433()
 			rtl433_thread = std::thread(readWeatherData);
 			rtl433_threadRunning = true;
 		}
+
+		return rtl433_pipeIsRunning;
 	}
-	return rtl433_pipeIsRunning;
+	return false;
 }
 
 bool ClosePipeRTL433()
