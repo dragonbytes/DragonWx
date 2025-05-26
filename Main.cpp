@@ -19,7 +19,10 @@
 #include <tchar.h>
 #else
 #include <X11/Xlib.h>
+#include <signal.h>
+#include <sys/wait.h>
 #endif
+
 #include <curl/curl.h>
 #include <cstdio>
 #include <numeric>
@@ -123,7 +126,7 @@ bool StartPipeRTL433()
 			PRINT_DEBUG("Failed to open pipe to rtl_433.\n");
 		#endif
 		#else
-		cliFullCommand = pathToExec + " -v " + cliFullCommand;
+		cliFullCommand = "sh -c 'echo pid $$; exec " + pathToExec + " -v " + cliFullCommand + "'";
 		pipeRTL_433 = popen(cliFullCommand.c_str(), "r");
 		rtl433_pipeIsRunning = (pipeRTL_433 == nullptr) ? false : true;
 		if (!rtl433_pipeIsRunning)
@@ -146,8 +149,12 @@ bool ClosePipeRTL433()
 	#if defined(_WIN32) && defined(USE_WINDOWS_PIPE)
 	rtl433_pipeIsRunning = !StopProcess(procRTL_433);
 	#elif defined(_WIN32)
+	kill(pid_rtl433, SIGTERM);
+	waitpid(pid_rtl433, NULL, 0);
 	_pclose(pipeRTL_433);
 	#else
+	kill(pid_rtl433, SIGTERM);
+	waitpid(pid_rtl433, NULL, 0);
 	pclose(pipeRTL_433);
 	#endif
 	return true;
@@ -266,6 +273,15 @@ void readWeatherData()
 				wxDataMessage += buffer;
 				if ((buffer[bufferLength - 1] == 0x0A) || (buffer[bufferLength - 1] == 0x0D))
 				{
+					#if !defined(_WIN32) || (defined(_WIN32) && !defined(USE_WINDOWS_PIPE))
+					if (wxDataMessage.substr(0, 3) == "pid")
+					{
+						std::string strLinuxPID = wxDataMessage.substr(wxDataMessage.find_first_of(' '));
+						pid_rtl433 = std::stoi(strLinuxPID);
+						PRINT_DEBUG("Linux PID for rtl_433 = %u\n", std::stoi(strLinuxPID));
+					}
+					#endif
+
 					//PRINT_DEBUG("Complete wxDataMessage:\n%s\n", wxDataMessage.c_str());
 					if (nlohmann::json::accept(wxDataMessage))			// Check if our complete message contains valid JSON before trying to parse
 					{

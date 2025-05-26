@@ -49,6 +49,7 @@ inline unsigned long bufferLength;
 inline ProcessHandle procRTL_433;
 #else
 inline FILE* pipeRTL_433;
+inline int pid_rtl433;
 #endif
 inline std::thread rtl433_thread;
 inline std::string cliFullCommand;
