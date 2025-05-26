@@ -20,6 +20,7 @@
 #endif
 
 olc::vi2d GetSystemResolution();
+bool CheckFileDependencies();
 #ifdef _WIN32
 bool StartProcess(ProcessHandle&, const char*);
 bool StopProcess(ProcessHandle&);

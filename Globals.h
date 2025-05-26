@@ -37,11 +37,15 @@ inline bool webWxEnabled = false;
 inline bool settingsPageIsForeground = false;
 inline bool infoPageIsForeground = false;
 inline bool invalidConfigFileState;
-inline bool appInitFailed, assetsNotFound = false, isValidResolution = false;
+inline bool assetsNotFound = false, isValidResolution = false;
 inline double tempFloat;
 inline int packetSequenceNum = -1;
 inline float elapsedTimeCounter = 0.0f;
 inline const int rainGaugeMarksTotal = 8;
+inline std::string imagesDirectory = "./Images/";
+inline std::array<std::string, 19> imageFileDependencies = { "Background_3840x2160.png", "ThermometerC_44px.png", "ThermometerF_44px.png", "Humidity_40px.png", "Raincloud_32px.png",
+                                                 "RainGaugeWater.png", "Signal_0.png", "Signal_1.png", "Signal_2.png", "Signal_3.png", "Signal_4.png", "TrendUp.png", "TrendSteady.png",
+                                                 "TrendDown.png", "Gear_24px.png", "Close_24px.png", "Info_24px.png", "TekTodd_Logo_160px.png", "Meteocons/Icons/not-available.png" };
 
 // RTL_433 CLI and thread-related variables
 inline unsigned long bufferLength;
@@ -101,11 +105,7 @@ inline float windDirAnimatedPosition, windDirHalfDistance, windDirDistanceLeft, 
 inline bool windAnimationIsMoving = false, windAnimationReversed = false, windAnimationDirPositive;
 inline floatPrevCur rainfallSensorValue = { undefinedFloatValue, undefinedFloatValue };
 inline rainfallAmountValuePair rainfallTotalToday, rainfallTotalEvent;
-//inline rainfallAmountValuePair rainfallRatePerHour;
-//inline floatPrevCur rainfallDataValueInches = { undefinedFloatValue, undefinedFloatValue };
-//inline floatRainUnits rainfallTotalToday = { 0.0, 0.0 }, rainfallTotalEvent = { 0.0, 0.0 };
 inline rainGaugeStruct rainGaugeCapacity;
-//inline std::deque<float> dequeRainRateSamples;
 inline rainfallRateStruct rainfallData;
 inline std::time_t rainEventStartTime = 0, rainEventStopTime = 0, rainEventLastUpdateTime = 0;
 inline const std::time_t rainEventClearedInterval = (120 * 60);      // Measured in seconds
@@ -120,12 +120,8 @@ inline const int trendSampleSize = 60 * 3;     // Measured at 1 sample per minut
 inline const int trendingUp = 1;
 inline const int trendingSteady = 0;
 inline const int trendingDown = -1;
-//inline floatPrevCur outdoorTempTrendSample;
-//inline intPrevCur intTrendSample;
 inline double doubleTempDelta;
 inline int intTrendCountUp = 0, intTrendCountSteady = 0, intTrendCountDown = 0;
-//inline intPrevCur trendDirOutdoorTemp = { trendingSteady, trendingSteady };
-//inline intPrevCur trendDirIndoorTemp = { trendingSteady, trendingSteady };
 inline double sumsBottomEquation, xSum = 0, xSumSquare = 0;
 
 inline std::array<configEntry, 15> configFileParams = {{

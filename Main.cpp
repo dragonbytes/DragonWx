@@ -38,17 +38,19 @@ int main()
 	if (std::filesystem::exists(errorLogFilename))
 	{
 		if (std::filesystem::remove(errorLogFilename))
-			PRINT_DEBUG("%s found and deleted succesfully.\n", errorLogFilename.c_str());
+			PRINT_DEBUG("Debug: %s found and deleted succesfully.\n", errorLogFilename.c_str());
 		else
-			PRINT_DEBUG("%s found but could NOT be deleted.\n", errorLogFilename.c_str());
+			PRINT_DEBUG("Debug: %s found but could NOT be deleted.\n", errorLogFilename.c_str());
 	}
 
 	invalidConfigFileState = !LoadConfigFile();
 	isValidResolution = (GetSystemResolution() == olc::vi2d(1280, 720));
 
-	if (useRealPipe && !invalidConfigFileState && !StartPipeRTL433())
+	assetsNotFound = CheckFileDependencies();
+
+	if (useRealPipe && !invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
 	{
-		PRINT_DEBUG("Failed to run external command.\n");
+		PRINT_DEBUG("Warning: rtl_433 process not started.\n");
 		rtl433_failedExecState = true;
 	}
 	
@@ -57,7 +59,7 @@ int main()
 
 	while (appShouldStart)
 	{
-		PRINT_DEBUG("About to launch Pixel Game Engine...\n");
+		PRINT_DEBUG("Info: About to launch Pixel Game Engine...\n");
 		appShouldStart = false;			// By default, the app should NOT restart itself when appInstance finishes
 
 		DragonWx appInstance;
@@ -68,7 +70,7 @@ int main()
 			appInstance.Start();
 	}
 
-	PRINT_DEBUG("Pixel Game Engine exited.\n");
+	PRINT_DEBUG("Info: Pixel Game Engine exited.\n");
 
 	if (rtl433_pipeIsRunning)
 	{
@@ -106,6 +108,25 @@ olc::vi2d GetSystemResolution()
 	return effectiveResolution;
 }
 
+bool CheckFileDependencies()
+{
+	bool fileWasMissing = false;
+	if (!std::filesystem::exists("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
+	{
+		WriteMsgToErrorLog("Error: Font file not found (Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
+		fileWasMissing = true;
+	}
+
+	for (int i = 0; i < imageFileDependencies.size(); i++)
+		if (!std::filesystem::exists(imagesDirectory + imageFileDependencies.at(i)))
+		{
+			WriteMsgToErrorLog("Error: Image file not found (" + imagesDirectory + imageFileDependencies.at(i) + ")");
+			fileWasMissing = true;
+		}
+
+	return fileWasMissing;
+}
+
 bool StartPipeRTL433()
 {
 	if (pathToExec.find_first_not_of(" \t\r\n") != std::string::npos)		// This makes sure pathToExec does not ONLY contain whitespace (spaces, tabs, CR, LF only)
@@ -133,7 +154,7 @@ bool StartPipeRTL433()
 			PRINT_DEBUG("Failed to open pipe to rtl_433.\n");
 		#endif
 
-		PRINT_DEBUG("CLI Full Command = %s\n", cliFullCommand.c_str());
+		PRINT_DEBUG("Info: CLI Full Command = %s\n", cliFullCommand.c_str());
 
 		if (rtl433_pipeIsRunning)
 		{
@@ -280,7 +301,7 @@ void readWeatherData()
 					{
 						std::string strLinuxPID = wxDataMessage.substr(wxDataMessage.find_first_of(' '));
 						pid_rtl433 = std::stoi(strLinuxPID);
-						PRINT_DEBUG("Linux PID for rtl_433 = %u\n", std::stoi(strLinuxPID));
+						PRINT_DEBUG("Info: Linux PID for rtl_433 = %u\n", std::stoi(strLinuxPID));
 					}
 					#endif
 

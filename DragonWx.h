@@ -49,11 +49,11 @@ public:
 	void UpdateAreaBordersSprite();
 	olc::Decal* UpdateTrendData(std::deque<float>* sourceDeque, float dataValue, olc::Decal*, std::string) const;
 	std::string GetWindDirectionName(double);
-	bool NextWindDirAnimationPoint(float& currentValue, float targetValue, float& currentVelocity, float& timeSinceLastUpdate, float fElapsedTimePGE);
-	float NormalizedAngle(float angle);
-	float shortest_angle_diff(float from, float to);
-	float update_weather_vane_spring(float current, float target, float& velocity, float stiffness, float damping, float dt);
-	float update_weather_vane(float current, float target, float& velocity, float max_speed, float acceleration, float dt);
+	//bool NextWindDirAnimationPoint(float& currentValue, float targetValue, float& currentVelocity, float& timeSinceLastUpdate, float fElapsedTimePGE);
+	//float NormalizedAngle(float angle);
+	//float shortest_angle_diff(float from, float to);
+	//float update_weather_vane_spring(float current, float target, float& velocity, float stiffness, float damping, float dt);
+	//float update_weather_vane(float current, float target, float& velocity, float max_speed, float acceleration, float dt);
 	void MidnightDailyReset();
 	void ResetAllStatistics();
 	bool LoadWebWxAssets(wxWebEntry*, olc::Decal*);

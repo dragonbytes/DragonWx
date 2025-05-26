@@ -11,7 +11,6 @@ DragonWx::DragonWx()
 
 bool DragonWx::OnUserCreate()
 {
-	appInitFailed = true;
 	mouseWaitingButtonRelease = false;
 	useFeelsLikeLabel = true;
 	useLuxValue = false;
@@ -46,27 +45,19 @@ bool DragonWx::OnUserCreate()
 
 	//fontMap.emplace(16, olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16));
 
-	if (std::filesystem::exists("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
-	{
-		fontSize16 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16);
-		fontSize18 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 18);
-		fontSize20 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 20);
-		fontSize22 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 22);
-		fontSize24 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 24);
-		fontSize26 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 26);
-		fontSize28 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 28);
-		fontSize30 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 30);
-		fontSize32 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 32);
-		fontSize40 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 40);
-		fontSize56 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 56);
-		fontSize72 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 72);
-		fontSize96 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 96);
-	}
-	else
-	{
-		WriteMsgToErrorLog("Error: Font file not found (Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
-		assetsNotFound = true;
-	}
+	fontSize16 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16);
+	fontSize18 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 18);
+	fontSize20 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 20);
+	fontSize22 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 22);
+	fontSize24 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 24);
+	fontSize26 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 26);
+	fontSize28 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 28);
+	fontSize30 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 30);
+	fontSize32 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 32);
+	fontSize40 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 40);
+	fontSize56 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 56);
+	fontSize72 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 72);
+	fontSize96 = olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 96);
 
 	spacerFontSize18 = fontSize18.GetStringBounds(U"-").size.x;
 	spacerFontSize24 = fontSize24.GetStringBounds(U"-").size.x;
@@ -382,13 +373,12 @@ bool DragonWx::OnUserCreate()
 		webWxRequested = true;		// Trigger the initial Web Weather request
 	}
 
-	appInitFailed = false;
 	return true;
 }
 
 bool DragonWx::OnUserUpdate(float fElapsedTime)
 {
-	if (appInitFailed)
+	if (assetsNotFound)
 	{
 		if (errorLogFile.is_open())
 		{
@@ -401,6 +391,11 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			{
 				if (tempString.empty())
 					textColor = olc::WHITE;
+
+				// Strip off the leading "./" in the path for easier readability on-screen
+				if (tempString.substr(0, 2) == "./")
+					tempString.erase(0, 2);
+
 				DrawString(positionTemp, tempString, textColor, 2);
 				positionTemp += olc::vi2d(0, 24);
 			}
@@ -2010,7 +2005,7 @@ std::string DragonWx::GetWindDirectionName(double windDirDegrees)
 
 	return "";
 }
-
+/*
 bool DragonWx::NextWindDirAnimationPoint(float& currentValue, float targetValue, float& currentVelocity, float& timeSinceLastUpdate, float fElapsedTimePGE)
 {
 	float maxVelocity = 3.0f;
@@ -2119,6 +2114,7 @@ float DragonWx::update_weather_vane(float current, float target, float& velocity
 
 	return current;
 }
+*/
 
 void DragonWx::MidnightDailyReset()
 {
@@ -2183,20 +2179,4 @@ bool DragonWx::LoadWebWxAssets(wxWebEntry* wxDataEntry, olc::Decal* decalTarget)
 }
 
 bool DragonWx::LoadImageFile(olc::Renderable& targetRenderable, std::string targetImagePath)
-{
-	olc::rcode resultCode = targetRenderable.Load(targetImagePath);
-	if (resultCode == olc::rcode::OK)
-		return true;
-
-	// Strip off the leading "./" in the path for easier readability on-screen
-	if (targetImagePath.substr(0, 2) == "./")
-		targetImagePath.erase(0, 2);
-
-	if (resultCode == olc::rcode::NO_FILE)
-		WriteMsgToErrorLog("Error: Image file not found (" + targetImagePath + ")");
-	else
-		WriteMsgToErrorLog("Error: Couldn't load image file (" + targetImagePath + ")");
-
-	assetsNotFound = true;
-	return false;
-}
+{ return (targetRenderable.Load(targetImagePath) == olc::rcode::OK); }
