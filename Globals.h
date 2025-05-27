@@ -142,6 +142,110 @@ inline std::string strLocationURL, curlResponseBuffer;
 inline wxWebEntry webWxCurrentConditions, webWxDailyForecasts[3];
 
 // Weather Code lookup table
+inline wxCodeStruct wxCodeTableNew[100] = {
+    { "Sunny", "Clear", "clear-day", "clear-night" },                                                           // 00
+    { "Mostly Sunny", "Mostly Clear", "clear-day", "clear-night" },
+    { "Partly Cloudy", "Partly CLoudy", "partly-cloudy-day", "partly-cloudy-night" },
+    { "Overcast", "Overcast", "overcast", "overcast" },
+    { "Light Smoke", "", "overcast-day-smoke", "overcast-night-smoke" },
+    { "Haze", "Haze", "haze-day", "haze-night" },                                                               // 05
+    { "Dust", "", "dust-day", "dust-night" },
+    { "Dusty Wind", "Dust Wind", "dust-day", "dust-night" },
+    { "Dusty Wind", "Dust Wind", "dust-wind", "dust-wind" },
+    { "Dust Storm", "Dust Storm", "dust-wind", "dust-wind" },
+    { "Mist", "Mist", "mist", "mist" },                                                                         // 10
+    { "Patchy Fog", "Patchy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Fog", "Fog", "overcast-fog", "overcast-fog" },
+    { "Lightning", "", "lightning-bolt", "lightning-bolt" },
+    { "Precipitation", "Precipitation", "rain", "rain" },
+    { "Precipitation", "Precipitation", "rain", "rain" },
+    { "Precipitation", "Precipitation", "rain", "rain" },
+    { "Thunderstorms", "", "thunderstorms", "thunderstorms" },
+    { "Squalls", "Squalls", "wind", "wind" },
+    { "Funnel Clouds", "Funnel Clouds", "tornado", "tornado" },
+    { "Drizzle", "Drizzle", "drizzle", "drizzle" },                                                             // 20
+    { "Rain", "Rain", "rain", "rain" },
+    { "Snow", "Snow", "snow", "snow" },
+    { "Wintry Mix", "", "overcast-sleet", "overcast-sleet" },
+    { "Freezing Drizzle", "", "overcast-sleet", "overcast-sleet" },
+    { "Rain Showers", "", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },
+    { "Snow Showers", "", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },
+    { "Hail Showers", "", "partly-cloudy-day-hail", "partly-cloudy-night-hail" },
+    { "Fog", "Fog", "overcast-day-fog", "overcast-night-fog" },
+    { "Thunderstorms", "Thunderstorms", "thunderstorms-overcast", "thunderstorms-overcast" },
+    { "Duststorm", "Duststorm", "dust-day", "dust-night" },                                                     // 30
+    { "Duststorm", "Duststorm", "dust-day", "dust-night" },
+    { "Duststorm", "Duststorm", "dust-day", "dust-night" },
+    { "Duststorm", "Duststorm", "dust", "dust" },
+    { "Duststorm", "Duststorm", "dust", "dust" },
+    { "Duststorm", "Duststorm", "dust", "dust" },
+    { "Light Snow", "", "wind-snow", "wind-snow" },
+    { "Heavy Snow", "", "wind-snow", "wind-snow" },
+    { "Light Snow", "", "wind-snow", "wind-snow" },
+    { "Heavy Snow", "", "wind-snow", "wind-snow" },
+    { "Fog", "Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },                                       // 40
+    { "Patchy Fog", "Patchy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Light Fog", "Light Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Light Fog", "Light Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Steady Fog", "Steady Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Steady Fog", "Steady Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Heavy Fog", "Heavy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Heavy Fog", "Heavy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Fog", "Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Fog", "Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
+    { "Light Drizzle", "Light Drizzle", "drizzle", "drizzle" },                                                 // 50
+    { "Light Drizzle", "Light Drizzle", "drizzle", "drizzle" },
+    { "Drizzle", "Drizzle", "drizzle", "drizzle" },
+    { "Drizzle", "Drizzle", "drizzle", "drizzle" },
+    { "Heavy Drizzle", "Heavy Drizzle", "extreme-drizzle", "extreme-drizzle" },
+    { "Heavy Drizzle", "Heavy Drizzle", "extreme-drizzle", "extreme-drizzle" },
+    { "Freezing Drizzle", "Freezing Drizzle", "overcast-day-sleet", "overcast-night-sleet" },
+    { "Freezing Drizzle", "Freezing Drizzle", "overcast-sleet", "overcast-sleet" },
+    { "Light Drizzle", "Light Drizzle", "drizzle", "drizzle" },
+    { "Heavy Drizzle", "Heavy Drizzle", "extreme-day-drizzle", "extreme-night-drizzle" },
+    { "Light Rain", "Light Rain", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },                       // 60
+    { "Light Rain", "Light Rain", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },
+    { "Rain", "Rain", "rain", "rain" },
+    { "Rain", "Rain", "rain", "rain" },
+    { "Heavy Rain", "Heavy Rain", "extreme-rain", "extreme-rain" },
+    { "Heavy Rain", "Heavy Rain", "extreme-rain", "extreme-rain" },
+    { "Freezing Rain", "Freezing Rain", "overcast-day-sleet", "overcast-night-sleet" },
+    { "Freezing Rain", "Freezing Rain", "overcast-sleet", "overcast-sleet" },
+    { "Snow Drizzle", "", "overcast-day-sleet", "overcast-night-sleet" },
+    { "Snow Drizzle", "", "overcast-sleet", "overcast-sleet" },
+    { "Light Snow", "Light Snow", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },                       // 70
+    { "Light Snow", "Light Snow", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },
+    { "Snow", "Snow", "snow", "snow" },
+    { "Snow", "Snow", "snow", "snow" },
+    { "Heavy Snow", "Heavy Snow", "extreme-snow", "extreme-snow" },
+    { "Heavy Snow", "Heavy Snow", "extreme-snow", "extreme-snow" },
+    { "Diamond Dust", "Diamond Dust", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },
+    { "Snow Grains", "Snow Grains", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },
+    { "Snow Crystals", "Snow Crystals", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },
+    { "Ice Pellets", "Ice Pellets", "overcast-hail", "overcast-hail" },
+    { "Rain Showers", "Rain Showers", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },                   // 80
+    { "Rain Showers", "Rain Showers", "overcast-day-rain", "overcast-night-rain" },
+    { "Rain Showers", "Rain Showers", "extreme-day-rain", "extreme-night-rain" },
+    { "Wintry Mix", "Wintry Mix", "overcast-day-sleet", "overcast-night-sleet" },
+    { "Wintry Mix", "Wintry Mix", "sleet", "sleet" },
+    { "Snow Showers", "Snow Showers", "partly-cloudy-day-snow", "partly-cloudy-night-snow" },                   // 85
+    { "Snow Showers", "Snow Showers", "overcast-day-snow", "overcast-night-snow" },
+    { "Hail Showers", "Hail Showers", "partly-cloudy-day-sleet", "partly-cloudy-night-sleet" },
+    { "Hail Showers", "Hail Showers", "overcast-day-sleet", "overcast-night-sleet" },
+    { "Hail Showers", "Hail Showers", "partly-cloudy-day-sleet", "partly-cloudy-night-sleet" },
+    { "Hail Showers", "Hail Showers", "overcast-day-sleet", "overcast-night-sleet" },                           // 90
+    { "Slight Rain", "Slight Rain", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },
+    { "Heavy Rain", "Heavy Rain", "extreme-rain", "extreme-rain" },
+    { "Wintry Mix", "Wintry Mix", "overcast-day-sleet", "overcast-night-sleet" },
+    { "Wintry Mix", "Wintry Mix", "sleet", "sleet" },
+    { "Thunderstorms", "Thunderstorms", "thunderstorms-day", "thunderstorms-night" },                           // 95
+    { "Thunderstorms", "Thunderstorms", "thunderstorms-day-snow", "thunderstorms-night-snow" },
+    { "Heavy Thunder", "Heavy Thunder", "thunderstorms-extreme-rain", "thunderstorms-extreme-rain" },
+    { "Thunderstorms", "Thunderstorms", "thunderstorms-overcast", "thunderstorms-overcast" },
+    { "Heavy Thunder", "Heavy Thunder", "thunderstorms-extreme-snow", "thunderstorms-extreme-snow" }
+};
+
+/*
 inline wxCodeStruct wxCodeTable[100] = {
     { "Sunny", "Clear", "wsymbol_0001_sunny", "wsymbol_0008_clear_sky_night" },                                                 // 00
     { "Mostly Sunny", "Mostly Clear", "wsymbol_0001_sunny", "wsymbol_0008_clear_sky_night" },
@@ -245,111 +349,6 @@ inline wxCodeStruct wxCodeTable[100] = {
     { "", "", "wsymbol_0059_thunderstorms_with_hail", "wsymbol_0077_thunderstorms_with_hail_night" }
 };
 
-// Weather Code lookup table
-inline wxCodeStruct wxCodeTableNew[100] = {
-    { "Sunny", "Clear", "clear-day", "clear-night" },                                                 // 00
-    { "Mostly Sunny", "Mostly Clear", "clear-day", "clear-night" },
-    { "Partly Cloudy", "Partly CLoudy", "partly-cloudy-day", "partly-cloudy-night" },
-    { "Overcast", "Overcast", "overcast", "overcast" },
-    { "", "", "smoke", "smoke" },
-    { "", "", "haze-day", "haze-night" },
-    { "", "", "dust-day", "dust-night" },
-    { "", "", "dust-day", "dust-night" },
-    { "", "", "dust-day", "dust-night" },
-    { "", "", "dust-day", "dust-night" },
-    { "Mist", "Mist", "mist", "mist" },                                                         // 10
-    { "", "", "wsymbol_0007_fog", "wsymbol_0064_fog_night" },
-    { "", "", "wsymbol_0007_fog", "wsymbol_0064_fog_night" },
-    { "", "", "wsymbol_0024_thunderstorms", "wsymbol_0040_thunderstorms_night" },
-    { "", "", "rain", "rain" },
-    { "", "", "rain", "rain" },
-    { "", "", "rain", "rain" },
-    { "", "", "wsymbol_0024_thunderstorms", "wsymbol_0040_thunderstorms_night" },
-    { "", "", "wsymbol_0060_windy", "wsymbol_0078_windy_night" },
-    { "", "", "wsymbol_0079_tornado", "wsymbol_0079_tornado" },
-    { "", "", "wsymbol_0048_drizzle", "wsymbol_0066_drizzle_night" },                                                           // 20
-    { "", "", "rain", "rain" },
-    { "", "", "wsymbol_0019_cloudy_with_light_snow", "wsymbol_0035_cloudy_with_light_snow_night" },
-    { "", "", "wsymbol_0021_cloudy_with_sleet", "wsymbol_0037_cloudy_with_sleet_night" },
-    { "", "", "wsymbol_0049_freezing_drizzle", "wsymbol_0067_freezing_drizzle_night" },
-    { "", "", "wsymbol_0009_light_rain_showers", "wsymbol_0025_light_rain_showers_night" },
-    { "", "", "wsymbol_0011_light_snow_showers", "wsymbol_0027_light_snow_showers_night" },
-    { "", "", "wsymbol_0014_light_hail_showers", "wsymbol_0030_light_hail_showers_night" },
-    { "", "", "wsymbol_0007_fog", "wsymbol_0064_fog_night" },
-    { "", "", "wsymbol_0024_thunderstorms", "wsymbol_0040_thunderstorms_night" },
-    { "", "", "wsymbol_0056_dust_sand", "wsymbol_0074_dust_sand_night" },                                                       // 30
-    { "", "", "wsymbol_0056_dust_sand", "wsymbol_0074_dust_sand_night" },
-    { "", "", "wsymbol_0056_dust_sand", "wsymbol_0074_dust_sand_night" },
-    { "", "", "wsymbol_0056_dust_sand", "wsymbol_0074_dust_sand_night" },
-    { "", "", "wsymbol_0056_dust_sand", "wsymbol_0074_dust_sand_night" },
-    { "", "", "wsymbol_0056_dust_sand", "wsymbol_0074_dust_sand_night" },
-    { "", "", "wsymbol_0053_blowing_snow", "wsymbol_0071_blowing_snow_night" },
-    { "", "", "wsymbol_0053_blowing_snow", "wsymbol_0071_blowing_snow_night" },
-    { "", "", "wsymbol_0053_blowing_snow", "wsymbol_0071_blowing_snow_night" },
-    { "", "", "wsymbol_0053_blowing_snow", "wsymbol_0071_blowing_snow_night" },
-    { "Fog", "Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },                                                       // 40
-    { "Patchy Fog", "Patchy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Light Fog", "Light Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Light Fog", "Light Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Steady Fog", "Steady Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Steady Fog", "Steady Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Heavy Fog", "Heavy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Heavy Fog", "Heavy Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Fog", "Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Fog", "Fog", "partly-cloudy-day-fog", "partly-cloudy-night-fog" },
-    { "Light Drizzle", "Light Drizzle", "drizzle", "drizzle" },                                 // 50
-    { "Light Drizzle", "Light Drizzle", "drizzle", "drizzle" },
-    { "Drizzle", "Drizzle", "drizzle", "drizzle" },
-    { "Drizzle", "Drizzle", "drizzle", "drizzle" },
-    { "Heavy Drizzle", "Heavy Drizzle", "extreme-drizzle", "extreme-drizzle" },
-    { "Heavy Drizzle", "Heavy Drizzle", "wsymbol_0048_drizzle", "wsymbol_0066_drizzle_night" },
-    { "Freezing Drizzle", "Freezing Drizzle", "wsymbol_0048_drizzle", "wsymbol_0066_drizzle_night" },
-    { "Freezing Drizzle", "Freezing Drizzle", "wsymbol_0048_drizzle", "wsymbol_0066_drizzle_night" },
-    { "Light Drizzle", "Light Drizzle", "drizzle", "drizzle" },
-    { "Heavy Drizzle", "Heavy Drizzle", "extreme-day-drizzle", "extreme-night-drizzle" },
-    { "Light Rain", "Light Rain", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },         // 60
-    { "Light Rain", "Light Rain", "partly-cloudy-day-rain", "partly-cloudy-night-rain" },
-    { "Rain", "Rain", "rain", "rain" },
-    { "Rain", "Rain", "rain", "rain" },
-    { "Heavy Rain", "Heavy Rain", "extreme-rain", "extreme-rain" },
-    { "Heavy Rain", "Heavy Rain", "extreme-rain", "extreme-rain" },
-    { "Freezing Rain", "Freezing Rain", "wsymbol_0050_freezing_rain", "wsymbol_0068_freezing_rain_night" },
-    { "Freezing Rain", "Freezing Rain", "wsymbol_0050_freezing_rain", "wsymbol_0068_freezing_rain_night" },
-    { "", "", "wsymbol_0021_cloudy_with_sleet", "wsymbol_0037_cloudy_with_sleet_night" },
-    { "", "", "wsymbol_0021_cloudy_with_sleet", "wsymbol_0037_cloudy_with_sleet_night" },
-    { "Light Snow", "Light Snow", "wsymbol_0019_cloudy_with_light_snow", "wsymbol_0035_cloudy_with_light_snow_night" },         // 70
-    { "Light Snow", "Light Snow", "wsymbol_0019_cloudy_with_light_snow", "wsymbol_0035_cloudy_with_light_snow_night" },
-    { "Snow", "Snow", "wsymbol_0020_cloudy_with_heavy_snow", "wsymbol_0036_cloudy_with_heavy_snow_night" },
-    { "Snow", "Snow", "wsymbol_0020_cloudy_with_heavy_snow", "wsymbol_0036_cloudy_with_heavy_snow_night" },
-    { "Heavy Snow", "Heavy Snow", "wsymbol_0020_cloudy_with_heavy_snow", "wsymbol_0036_cloudy_with_heavy_snow_night" },
-    { "Heavy Snow", "Heavy Snow", "wsymbol_0020_cloudy_with_heavy_snow", "wsymbol_0036_cloudy_with_heavy_snow_night" },
-    { "Diamond Dust", "Diamond Dust", "wsymbol_0019_cloudy_with_light_snow", "wsymbol_0035_cloudy_with_light_snow_night" },
-    { "Snow Grains", "Snow Grains", "wsymbol_0019_cloudy_with_light_snow", "wsymbol_0035_cloudy_with_light_snow_night" },
-    { "Snow Crystals", "Snow Crystals", "wsymbol_0019_cloudy_with_light_snow", "wsymbol_0035_cloudy_with_light_snow_night" },
-    { "Ice Pellets", "Ice Pellets", "wsymbol_0022_cloudy_with_light_hail", "wsymbol_0038_cloudy_with_light_hail_night" },
-    { "", "", "wsymbol_0009_light_rain_showers", "wsymbol_0025_light_rain_showers_night" },                                     // 80
-    { "", "", "wsymbol_0010_heavy_rain_showers", "wsymbol_0028_heavy_snow_showers_night" },
-    { "", "", "wsymbol_0085_extreme_rain_showers", "wsymbol_0086_extreme_rain_showers_night" },
-    { "", "", "wsymbol_0013_sleet_showers", "wsymbol_0029_sleet_showers_night" },
-    { "", "", "wsymbol_0013_sleet_showers", "wsymbol_0029_sleet_showers_night" },
-    { "", "", "wsymbol_0011_light_snow_showers", "wsymbol_0027_light_snow_showers_night" },
-    { "", "", "wsymbol_0012_heavy_snow_showers", "wsymbol_0028_heavy_snow_showers_night" },
-    { "", "", "wsymbol_0014_light_hail_showers", "wsymbol_0030_light_hail_showers_night" },
-    { "", "", "wsymbol_0015_heavy_hail_showers", "wsymbol_0031_heavy_hail_showers_night" },
-    { "", "", "wsymbol_0014_light_hail_showers", "wsymbol_0030_light_hail_showers_night" },
-    { "", "", "wsymbol_0015_heavy_hail_showers", "wsymbol_0031_heavy_hail_showers_night" },
-    { "", "", "wsymbol_0017_cloudy_with_light_rain", "wsymbol_0033_cloudy_with_light_rain_night" },
-    { "", "", "wsymbol_0018_cloudy_with_heavy_rain", "wsymbol_0034_cloudy_with_heavy_rain_night" },
-    { "", "", "wsymbol_0021_cloudy_with_sleet", "wsymbol_0037_cloudy_with_sleet_night" },
-    { "", "", "wsymbol_0021_cloudy_with_sleet", "wsymbol_0037_cloudy_with_sleet_night" },
-    { "", "", "wsymbol_0024_thunderstorms", "wsymbol_0040_thunderstorms_night" },
-    { "", "", "wsymbol_0059_thunderstorms_with_hail", "wsymbol_0077_thunderstorms_with_hail_night" },
-    { "", "", "wsymbol_0024_thunderstorms", "wsymbol_0040_thunderstorms_night" },
-    { "", "", "wsymbol_0024_thunderstorms", "wsymbol_0040_thunderstorms_night" },
-    { "", "", "wsymbol_0059_thunderstorms_with_hail", "wsymbol_0077_thunderstorms_with_hail_night" }
-};
-
-/*
 std::string wxCodesWMO[100] = {
     "Clear",                      	// 0
     "Mostly Clear",               	// 1
