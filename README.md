@@ -85,16 +85,16 @@ DragonWx passes all of your SDR-specific settings directly to the rtl_433 progra
 
 Special thanks and shoutout to my good friend Kirstin Stich for her invaluable insight/input on the look and feel of the app, and to everyone on the <a href="https://discord.gg/WhwHUMV">OneLoneCoder Discord</a> for all your help, advice, and patience with my coding questions! Thank you very much!
 
-### Icon Attributions
+### Attributions
 
-<a href="https://bas.dev/work/meteocons">Meteocons by Bas Milius</a>
-<br>
-<a href="https://www.flaticon.com/free-icons/increase" title="increase icons">Increase icons created by Nur syifa fauziah - Flaticon</a>
-<br>
-<a href="https://www.flaticon.com/free-icons/arrow" title="arrow icons">Arrow icons created by Dave Gandy - Flaticon</a> (Modified Color / License <a href="http://creativecommons.org/licenses/by/3.0/">CC 3.0 BY</a>)
-<br>
-<a href="https://www.flaticon.com/free-icons/gear" title="gear icons">Gear icons created by Freepik - Flaticon</a>
-<br>
-<a href="https://www.flaticon.com/free-icons/close" title="close icons">Close icons created by VectorPortal - Flaticon</a>
-<br>
-<a href="https://www.flaticon.com/free-icons/signal" title="signal icons">Signal icons created by Ayub Irawan - Flaticon</a>
+[olcPixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine) by [One Lone Coder](https://github.com/OneLoneCoder/Javidx9)<br>
+[rtl_433](https://github.com/merbanan/rtl_433) by [merbanan (Benjamin Larsson)](https://github.com/merbanan)<br>
+[Weather forecast data](https://github.com/open-meteo/open-meteo) by [Open-Meteo.com](https://open-meteo.com/) (License [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/))
+
+[Meteocons by Bas Milius](https://bas.dev/work/meteocons)<br>
+[Increase icons created by Nur syifa fauziah](https://www.flaticon.com/free-icons/increase) - [Flaticon](https://www.flaticon.com/)<br>
+[Arrow icons created by Dave Gandy](https://www.flaticon.com/free-icons/arrow) - [Flaticon](https://www.flaticon.com/) (Modified Color / License [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/))<br>
+[Gear icons created by Freepik](https://www.flaticon.com/free-icons/gear) - [Flaticon](https://www.flaticon.com/)<br>
+[Close icons created by VectorPortal](https://www.flaticon.com/free-icons/close) - [Flaticon](https://www.flaticon.com/)<br>
+[Signal icons created by Ayub Irawan](https://www.flaticon.com/free-icons/signal) - [Flaticon](https://www.flaticon.com/)
+
