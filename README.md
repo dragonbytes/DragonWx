@@ -92,7 +92,7 @@ DragonWx passes all of your SDR-specific settings directly to the rtl_433 progra
 
 ### Special Thanks
 
-Special thanks and shoutout to my good friend Kirstin Stich for her invaluable insight/input on the look and feel of the app, and to everyone on the <a href="https://discord.gg/WhwHUMV">OneLoneCoder Discord</a> for all your help, advice, and patience with my coding questions! Thank you very much!
+Special thanks and shoutout to my good friend Kirstin Stich for her invaluable insight/input on the look and feel of the app, and to everyone on the <a href="https://discord.gg/WhwHUMV">OneLoneCoder Discord</a> for all your help, advice, and patience with my coding questions! Thank you all very much!
 
 ### Attributions
 
