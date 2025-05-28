@@ -36,11 +36,9 @@ bool DragonWx::OnUserCreate()
 		CalculateFeelsLikeMetrics();
 	}
 	else
-		dequeWindDirections.push_front(0.0f);		// Set initial wind arrow direction to North
-	#else
-	dequeWindDirections.push_front(0.0f);		// Set initial wind arrow direction to North
 	#endif
-
+		dequeWindDirections.push_front(0.0f);		// Set initial wind arrow direction to North
+	
 	colorLabelText = { 48, 139, 151 };
 	rainGaugeBorderColor = { 53, 157, 242 };
 	areasBorderColor = { 100, 100, 100 };
