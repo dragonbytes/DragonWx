@@ -2,6 +2,13 @@
 
 DragonWx is a weather display app that receives live telemetry from nearby Home Weather Station sensors using an SDR receiver connected to a computer.
 
+<br>
+<p align="center">
+	<img src="./readme_assets/DragonWx-Main.png">
+<i>DragonWx's Main Interface</i>
+</p>
+<br>
+
 ### What You Will Need
 
 - Computer running either Windows or Linux.
