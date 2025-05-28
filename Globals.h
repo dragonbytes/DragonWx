@@ -4,19 +4,16 @@
 
 // Debug-related variables
 #ifdef _DEBUG
-inline bool useRealPipe = true;
-inline bool useRealWebRequests = true;
+inline bool appDemoMode = true;
+inline bool useRealWebRequests = false;
 inline bool fullscreenToggle = true;
+inline bool prevKeyPressed = true;
+inline std::time_t demoAppTime;
 #else
-inline bool useRealPipe = true;
+inline bool appDemoMode = false;
 inline bool useRealWebRequests = true;
 inline bool fullscreenToggle = true;
 #endif
-inline bool debugKeyPressed = false;
-inline bool prevKeyPressed = true;
-inline bool debugState = false;
-inline bool useSDRplay = true;
-inline bool debugFunctionFlag = false;
 
 // Application-related constants and variables
 inline std::fstream errorLogFile;

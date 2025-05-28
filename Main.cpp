@@ -48,14 +48,11 @@ int main()
 
 	assetsNotFound = CheckFileDependencies();
 
-	if (useRealPipe && !invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
+	if (!appDemoMode && !invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
 	{
 		PRINT_DEBUG("Warning: rtl_433 process not started.\n");
 		rtl433_failedExecState = true;
 	}
-	
-	if (!useRealWebRequests)
-		GetWebForecast(strLocationURL, &curlResponseBuffer);
 
 	while (appShouldStart)
 	{
@@ -289,7 +286,7 @@ void readWeatherData()
 			webWxRequested = false;
 		}
 
-		if (useRealPipe)
+		if (!appDemoMode)
 		{
 			if (GetOutputRTL433() && (bufferLength > 0))
 			{
@@ -390,8 +387,7 @@ void readWeatherData()
 
 									if (jsonWxTelemetry.contains("rain_in"))
 									{
-										if (!debugState)
-											rainfallSensorValue.current = jsonWxTelemetry["rain_in"];
+										rainfallSensorValue.current = jsonWxTelemetry["rain_in"];
 										if (rainfallSensorValue.previous != undefinedFloatValue)
 										{
 											float rainfallDeltaValue = 0.0;
@@ -722,19 +718,36 @@ bool SaveConfigFile()
 	return true;
 }
 
-void populateTestData()
+#ifdef _DEBUG
+void populateDemoData()
 {
+	demoAppTime = 1748462051;
+	webWxLocationLat = "41.8907";
+	webWxLocationLon = "-71.3923";
+
 	outdoorSensor.name = "Acurite Atlas";
-	outdoorSensor.temperature.current.SetValue(76.2f, imperialUnits);
+	outdoorSensor.temperature.current.SetValue(67.2f, imperialUnits);
 	outdoorSensor.temperature.low.SetValue(53.2f, imperialUnits);
-	outdoorSensor.temperature.high.SetValue(86.7f, imperialUnits);
-	outdoorSensor.humidity.current = 76;
+	outdoorSensor.temperature.high.SetValue(75.7f, imperialUnits);
+	outdoorSensor.humidity.current = 89;
+	outdoorSensor.humidity.low = 44;
+	outdoorSensor.humidity.high = 89;
+
 	dequeWindDirections.push_back(220.0f);
-	dequeWindDirections.push_back(170.0f);
-	dequeWindDirections.push_back(200.0f);
+	dequeWindDirections.push_back(190.0f);
+	dequeWindDirections.push_back(210.0f);
 	windSpeedValue.current.SetValue(7.4, imperialUnits);
-	rainfallTotalToday.inches = 0.14;
-	uvIndex.Update(4);
+	windSpeedValue.average.SetValue(4, imperialUnits);
+	windSpeedValue.peak.SetValue(13, imperialUnits);
+
+	rainfallTotalToday.inches = 0.64;
+	rainfallData.rainfallRate.SetValue(0.70, imperialUnits);
+	rainEventStartTime = 1748456666;
+	strRainEventStartTime = GetFormattedLocalTime("%I:%M %p", &rainEventStartTime);
+	if (strRainEventStartTime.at(0) == '0')
+		strRainEventStartTime.erase(0, 1);		// Strip off any leading zeros on the hours value
+
+	uvIndex.Update(2);
 	lightLevelLux.Update(9000);
 
 	indoorSensor.temperature.current.SetValue(69.3f, imperialUnits);
@@ -747,9 +760,8 @@ void populateTestData()
 	indoorSensor.batteryStatus = batteryStatusNormal;
 	indoorSensor.packetCounter = 4;
 	indoorSensor.channel = "B";
-
-	rainEventStartTime = std::time(nullptr);
 }
+#endif
 
 bool GetWebForecast(std::string url, std::string* curlOutputBufferPtr)
 {

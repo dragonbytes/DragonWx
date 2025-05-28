@@ -39,10 +39,12 @@ bool LoadConfigFile();
 bool SaveConfigFile();
 void WriteMsgToErrorLog(std::string outputString);
 
+#ifdef _DEBUG
 // Debug/testing related functions
-void populateTestData();
+void populateDemoData();
 static void ReadFileJSON(std::string, std::string*);
 static void TestJSON(std::string);
+#endif
 
 // Conversion/translation related functions
 double ConvertedTempCtoF(float tempC);

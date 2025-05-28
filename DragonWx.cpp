@@ -29,8 +29,11 @@ bool DragonWx::OnUserCreate()
 	indoorSensor.packetCounter = 0;
 	indoorSensor.batteryStatus = undefinedFloatValue;
 
-	if (!useRealPipe)
-		populateTestData();
+	if (appDemoMode)
+	{
+		populateDemoData();
+		CalculateFeelsLikeMetrics();
+	}
 	else
 		dequeWindDirections.push_front(0.0f);		// Set initial wind arrow direction to North
 
@@ -371,6 +374,12 @@ bool DragonWx::OnUserCreate()
 		strLocationURL = "https://api.open-meteo.com/v1/forecast?latitude=" + webWxLocationLat + "&longitude=" + webWxLocationLon;
 		strLocationURL += "&current=temperature_2m,is_day,weather_code,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=3&timeformat=unixtime";
 		webWxRequested = true;		// Trigger the initial Web Weather request
+		
+		if (appDemoMode)
+		{
+			GetWebForecast(strLocationURL, &curlResponseBuffer);
+			webWxNewDataReady = true;
+		}
 	}
 
 	return true;
@@ -615,7 +624,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 	if (elapsedTimeCounter >= 15.0f)
 	{
-		if (!useRealPipe)
+		if (appDemoMode)
 		{
 			if (dequeWindDirections.size() >= 3)
 				dequeWindDirections.pop_back();
@@ -659,25 +668,28 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			}
 		}
 
-		if (outdoorSensor.recentlyUpdated)
+		if (!appDemoMode)
 		{
-			if (outdoorSensor.packetCounter < 4)
-				outdoorSensor.packetCounter++;
+			if (outdoorSensor.recentlyUpdated)
+			{
+				if (outdoorSensor.packetCounter < 4)
+					outdoorSensor.packetCounter++;
 
-			outdoorSensor.recentlyUpdated = false;
-		}
-		else if (outdoorSensor.packetCounter > 0)
-			outdoorSensor.packetCounter--;
+				outdoorSensor.recentlyUpdated = false;
+			}
+			else if (outdoorSensor.packetCounter > 0)
+				outdoorSensor.packetCounter--;
 
-		// Handle Indoor sensor telemetry timer/packet count
-		if (indoorSensor.recentlyUpdated)
-		{
-			if (indoorSensor.packetCounter < 4)
-				indoorSensor.packetCounter++;
-			indoorSensor.recentlyUpdated = false;
+			// Handle Indoor sensor telemetry timer/packet count
+			if (indoorSensor.recentlyUpdated)
+			{
+				if (indoorSensor.packetCounter < 4)
+					indoorSensor.packetCounter++;
+				indoorSensor.recentlyUpdated = false;
+			}
+			else if (indoorSensor.packetCounter > 0)
+				indoorSensor.packetCounter--;
 		}
-		else if (indoorSensor.packetCounter > 0)
-			indoorSensor.packetCounter--;
 
 		minuteTimeCounter++;
 		if (minuteTimeCounter >= 4)			// Effectively manages a 1 minute timer out of the 15 second one
@@ -884,7 +896,11 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		RenderString32(titleBoxForecastPanel.text32, titleBoxForecastPanel.fontPtr, olc::GREY, &titleBoxForecastPanel.textObj, titleBoxForecastPanel.posTitle);
 
 	// Check the current system time and if it has changed since last check, render/display it
-	systemTimeNow = std::time(nullptr);
+	if (!appDemoMode)
+		systemTimeNow = std::time(nullptr);
+	else
+		systemTimeNow = demoAppTime;
+
 	if (systemTimeNow != systemTimePrevious)
 	{
 		std::tm systemTimeLocalNow = *std::localtime(&systemTimeNow);
