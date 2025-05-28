@@ -48,7 +48,11 @@ int main()
 
 	assetsNotFound = CheckFileDependencies();
 
+	#ifdef _DEBUG
 	if (!appDemoMode && !invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
+	#else
+	if (!invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
+	#endif
 	{
 		PRINT_DEBUG("Warning: rtl_433 process not started.\n");
 		rtl433_failedExecState = true;
@@ -286,7 +290,9 @@ void readWeatherData()
 			webWxRequested = false;
 		}
 
+		#ifdef _DEBUG
 		if (!appDemoMode)
+		#endif
 		{
 			if (GetOutputRTL433() && (bufferLength > 0))
 			{

@@ -6,13 +6,8 @@
 #ifdef _DEBUG
 inline bool appDemoMode = true;
 inline bool useRealWebRequests = false;
-inline bool fullscreenToggle = true;
 inline bool prevKeyPressed = true;
 inline std::time_t demoAppTime;
-#else
-inline bool appDemoMode = false;
-inline bool useRealWebRequests = true;
-inline bool fullscreenToggle = true;
 #endif
 
 // Application-related constants and variables
@@ -24,6 +19,7 @@ inline std::string sdrExtraArguments, sdrGainSetting, sdrAntennaSetting, strWxSt
 inline std::u32string tempString32;
 inline constexpr bool metricUnits = true;
 inline constexpr bool imperialUnits = false;
+inline bool fullscreenToggle = true;
 inline bool rtl433_failedExecState = false;
 inline bool rtl433_pipeIsRunning = false;
 inline bool appShouldStart = true;

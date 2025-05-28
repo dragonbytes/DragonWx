@@ -29,6 +29,7 @@ bool DragonWx::OnUserCreate()
 	indoorSensor.packetCounter = 0;
 	indoorSensor.batteryStatus = undefinedFloatValue;
 
+	#ifdef _DEBUG
 	if (appDemoMode)
 	{
 		populateDemoData();
@@ -36,6 +37,9 @@ bool DragonWx::OnUserCreate()
 	}
 	else
 		dequeWindDirections.push_front(0.0f);		// Set initial wind arrow direction to North
+	#else
+	dequeWindDirections.push_front(0.0f);		// Set initial wind arrow direction to North
+	#endif
 
 	colorLabelText = { 48, 139, 151 };
 	rainGaugeBorderColor = { 53, 157, 242 };
@@ -375,11 +379,13 @@ bool DragonWx::OnUserCreate()
 		strLocationURL += "&current=temperature_2m,is_day,weather_code,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=3&timeformat=unixtime";
 		webWxRequested = true;		// Trigger the initial Web Weather request
 		
+		#ifdef _DEBUG
 		if (appDemoMode)
 		{
 			GetWebForecast(strLocationURL, &curlResponseBuffer);
 			webWxNewDataReady = true;
 		}
+		#endif
 	}
 
 	return true;
@@ -624,6 +630,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 	if (elapsedTimeCounter >= 15.0f)
 	{
+		#ifdef _DEBUG
 		if (appDemoMode)
 		{
 			if (dequeWindDirections.size() >= 3)
@@ -667,8 +674,11 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 				PRINT_DEBUG("%s Debug: Moving from %.0f to %.0f\n", GetTimestamp().c_str(), windDirAnimatedPosition, newRandomWindDirection);
 			}
 		}
+		#endif
 
+		#ifdef _DEBUG
 		if (!appDemoMode)
+		#endif
 		{
 			if (outdoorSensor.recentlyUpdated)
 			{
@@ -896,10 +906,14 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		RenderString32(titleBoxForecastPanel.text32, titleBoxForecastPanel.fontPtr, olc::GREY, &titleBoxForecastPanel.textObj, titleBoxForecastPanel.posTitle);
 
 	// Check the current system time and if it has changed since last check, render/display it
+	#ifdef _DEBUG
 	if (!appDemoMode)
 		systemTimeNow = std::time(nullptr);
 	else
 		systemTimeNow = demoAppTime;
+	#else
+	systemTimeNow = std::time(nullptr);
+	#endif
 
 	if (systemTimeNow != systemTimePrevious)
 	{
