@@ -4,8 +4,8 @@
 
 // Debug-related variables
 #ifdef _DEBUG
-inline bool appDemoMode = true;
-inline bool useRealWebRequests = false;
+inline bool appDemoMode = false;
+inline bool useRealWebRequests = true;
 inline bool prevKeyPressed = true;
 inline std::time_t demoAppTime;
 #endif
@@ -31,7 +31,7 @@ inline bool settingsPageIsForeground = false;
 inline bool infoPageIsForeground = false;
 inline bool invalidConfigFileState;
 inline bool assetsNotFound = false, isValidResolution = false;
-inline double tempFloat;
+inline float tempFloat;
 inline int packetSequenceNum = -1;
 inline float elapsedTimeCounter = 0.0f;
 inline const int rainGaugeMarksTotal = 8;
@@ -39,6 +39,7 @@ inline std::string imagesDirectory = "./Images/";
 inline std::array<std::string, 19> imageFileDependencies = { "Background_3840x2160.png", "ThermometerC_44px.png", "ThermometerF_44px.png", "Humidity_40px.png", "Raincloud_32px.png",
                                                  "RainGaugeWater.png", "Signal_0.png", "Signal_1.png", "Signal_2.png", "Signal_3.png", "Signal_4.png", "TrendUp.png", "TrendSteady.png",
                                                  "TrendDown.png", "Gear_24px.png", "Close_24px.png", "Info_24px.png", "TekTodd_Logo_160px.png", "Meteocons/Icons/not-available.png" };
+constexpr double pi = 3.141592653589793;
 
 // RTL_433 CLI and thread-related variables
 inline unsigned long bufferLength;

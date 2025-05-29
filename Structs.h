@@ -343,7 +343,7 @@ struct windSpeedStruct
 			samplesSum += dequeWindSpeed[i];
 
 		average.SetValue(samplesSum / sampleSize, ifSourceMetric);
-		peak.SetValue(std::ranges::max(dequeWindSpeed), ifSourceMetric);
+		peak.SetValue(*std::max_element(dequeWindSpeed.begin(), dequeWindSpeed.end()), ifSourceMetric);
 
 		previous = current;
 		current.SetValue(newValue, ifSourceMetric);

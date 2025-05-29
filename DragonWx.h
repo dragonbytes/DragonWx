@@ -20,6 +20,8 @@ public:
 	bool mouseClickedInputBox(inputBoxStruct*) const;
 	void ActivateInputBox(inputBoxStruct*);
 	bool PasteTextFromClipboard();
+	std::string FormatStringFromFloat(const char*, float);
+	std::string FormatStringFromInt(const char*, int);
 	bool isWhiteSpaceOnly(const std::string&);
 	olc::vi2d StringPixelSize(olc::Font&, std::u32string&);
 	olc::vi2d GetCenteredStartPosition(olc::vi2d, olc::vi2d);

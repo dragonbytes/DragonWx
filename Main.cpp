@@ -85,6 +85,18 @@ int main()
 	return 0;
 }
 
+void StripCharacters(std::string& inputString, const char* unwantedChars)
+{
+	for (int i = 0; i < strlen(unwantedChars); i++)
+		for (auto it = inputString.begin(); it != inputString.end();)
+		{
+			if (*it == unwantedChars[i])
+				inputString.erase(it);
+			else
+				++it;
+		}
+}
+
 olc::vi2d GetSystemResolution()
 {
 	olc::vi2d effectiveResolution = { 0, 0 };
@@ -620,7 +632,7 @@ double ConvertedTempFtoC(float tempF)
 { return ((tempF - 32) / 1.8); }
 
 double degreesToRadians(double degrees)
-{ return (degrees * (std::numbers::pi / 180.0)); }
+{ return (degrees * (pi / 180.0)); }
 
 bool LoadConfigFile()
 {
@@ -643,9 +655,10 @@ bool LoadConfigFile()
 			{
 				strParamName = inputLine.substr(0, paramNameEndIndex);
 				strParamValue = inputLine.substr(paramValueIndex, inputLine.size() - paramValueIndex);
-				std::erase(strParamValue, '\r');	// Strip out CR's
-				std::erase(strParamValue, '\n');	// Strip out LF's
-				std::erase(strParamValue, '\"');	// Strip out quotes
+				//std::erase(strParamValue, '\r');	// Strip out CR's
+				//std::erase(strParamValue, '\n');	// Strip out LF's
+				//std::erase(strParamValue, '\"');	// Strip out quotes
+				StripCharacters(strParamValue, "\r\n\"");
 
 				for (int i = 0; i < configFileParams.size(); i++)
 				{

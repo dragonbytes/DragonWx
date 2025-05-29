@@ -19,6 +19,7 @@
 #define PRINT_DEBUG(fmt, ...)
 #endif
 
+void StripCharacters(std::string&, const char*);
 olc::vi2d GetSystemResolution();
 bool CheckFileDependencies();
 #ifdef _WIN32

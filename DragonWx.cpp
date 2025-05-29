@@ -528,8 +528,8 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 					indoorSensor.humidity.offset = std::stoi(inputBoxIndoorCalHumidity.value.text);
 				webWxLocationLat = inputBoxLatitude.value.text;
 				webWxLocationLon = inputBoxLongitude.value.text;
-				std::erase(inputBoxSdrExecPath.value.text, '\"');							// Strip out any potential leading/trailing quotes
-				std::erase(inputBoxSdrParams.value.text, '\"');								// Strip out any potential leading/trailing quotes
+				StripCharacters(inputBoxSdrExecPath.value.text, "\"");						// Strip out any potential leading/trailing quotes
+				StripCharacters(inputBoxSdrParams.value.text, "\"");						// Strip out any potential leading/trailing quotes
 				dialogBoxRestartRequired.showInForeground = ((sdrGainSetting != inputBoxSdrGain.value.text) || (sdrExtraArguments != inputBoxSdrParams.value.text) || (pathToExec != inputBoxSdrExecPath.value.text));
 				sdrGainSetting = inputBoxSdrGain.value.text;
 				sdrExtraArguments = inputBoxSdrParams.value.text;
@@ -551,9 +551,9 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			setupWebWxEnabled = webWxEnabled;
 			inputBoxOutdoorID.value.text = outdoorSensor.ID;
 			inputBoxIndoorID.value.text = indoorSensor.ID;
-			inputBoxOutdoorCalTemp.value.text = std::format("{:.1f}", outdoorSensor.temperature.offset.GetValue(setupUseMetricUnits));
+			inputBoxOutdoorCalTemp.value.text = FormatStringFromFloat("%.1f", outdoorSensor.temperature.offset.GetValue(setupUseMetricUnits));
 			inputBoxOutdoorCalHumidity.value.text = std::to_string(outdoorSensor.humidity.offset);
-			inputBoxIndoorCalTemp.value.text = std::format("{:.1f}", indoorSensor.temperature.offset.GetValue(setupUseMetricUnits));
+			inputBoxIndoorCalTemp.value.text = FormatStringFromFloat("%.1f", indoorSensor.temperature.offset.GetValue(setupUseMetricUnits));
 			inputBoxIndoorCalHumidity.value.text = std::to_string(indoorSensor.humidity.offset);
 			inputBoxLatitude.isEnabled = setupWebWxEnabled;
 			inputBoxLongitude.isEnabled = setupWebWxEnabled;
@@ -950,13 +950,12 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	// Display the temperature
 	if (outdoorSensor.temperature.current.IsDefined())
 	{
-		//RenderStringRightJustified(std::format("{:.1f}", outdoorTempValueF.current), &fontSize96, olc::WHITE, &renderableTempValue, positionOutdoorTempValueF);
 		tempFloat = outdoorSensor.temperature.current.GetValue(currentUnits);
-		tempString = std::to_string(int(tempFloat));
-		RenderStringRightJustified(tempString, &fontSize96, olc::WHITE, &textObjectTempValue, positionOutdoorTempValue);
-		tempString32 = ConvertedString32(std::format("{:.1f}", tempFloat - int(tempFloat)));
+		RenderStringRightJustified(std::to_string(int(tempFloat)), &fontSize96, olc::WHITE, &textObjectTempValue, positionOutdoorTempValue);
+		//tempString32 = ConvertedString32(std::format("{:.1f}", tempFloat - int(tempFloat)));
+		tempString32 = ConvertedString32(FormatStringFromFloat("%.1f", float(tempFloat - int(tempFloat))));
 		tempString32.erase(tempString32.begin());
-		positionTemp = { 9, fontSize96.GetStringBounds(ConvertedString32(tempString)).size.y - fontSize40.GetStringBounds(tempString32).size.y };
+		positionTemp = { 9, textObjectTempValue.height - fontSize40.GetStringBounds(tempString32).size.y };
 		RenderString32(tempString32, &fontSize40, olc::WHITE, &textObjectTempDecimalValue, positionOutdoorTempValue + positionTemp);
 	}
 	else
@@ -974,7 +973,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 	// Display the Outdoor Humidity
 	if (outdoorSensor.humidity.current != undefinedIntValue)
-		RenderStringRightJustified(std::format("{:d}", outdoorSensor.humidity.current), &fontSize96, olc::WHITE, &textObjectHumidityValue, positionOutdoorHumidityValue);
+		RenderStringRightJustified(FormatStringFromInt("%d", outdoorSensor.humidity.current), &fontSize96, olc::WHITE, &textObjectHumidityValue, positionOutdoorHumidityValue);
 	else
 		RenderStringRightJustified("- -", &fontSize96, olc::WHITE, &textObjectHumidityValue, positionOutdoorHumidityValue + positionDashCorrection96 - olc::vf2d(15, 0));
 	RenderString("%", &fontSize32, colorLabelText, &textObjectHumidityUnits, positionOutdoorHumidityValue + olc::vf2d(9, 0));
@@ -990,7 +989,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	// Display the calculated dewpoint
 	RenderString("Dewpoint", &fontSize32, olc::GREY, &textObjectLabelDewpoint, positionDewPointLabel);
 	if (dewpointValue.IsDefined())
-		positionTemp = RenderStringSegment(std::format("{:.1f}", dewpointValue.GetValue(currentUnits)), &fontSize32, olc::WHITE, &textObjectDewpointValue, positionDewPointValue, spacerFontSize24);
+		positionTemp = RenderStringSegment(FormatStringFromFloat("%.1f", dewpointValue.GetValue(currentUnits)), &fontSize32, olc::WHITE, &textObjectDewpointValue, positionDewPointValue, spacerFontSize24);
 	else
 		positionTemp = RenderStringSegment("-  -", &fontSize32, olc::GREY, &textObjectDewpointValue, positionDewPointValue + positionDashCorrection32, spacerFontSize24 * 2);
 	RenderString32(degreeUnits.Label(currentUnits), &fontSize24, colorLabelText, &textObjectDewPointUnits, positionTemp);
@@ -1027,7 +1026,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	}
 	RenderString32(strFeelsLikeLabel, &fontSize32, olc::GREY, &textObjectFeelsLikeLabel, positionFeelsLikeLabel);
 	if (feelsLikeTemp != undefinedFloatValue)
-		positionTemp = RenderStringSegment(std::format("{:.1f}", feelsLikeTemp), &fontSize32, olc::WHITE, &textObjectFeelsLikeValue, positionFeelsLikeValue, spacerFontSize24);
+		positionTemp = RenderStringSegment(FormatStringFromFloat("%.1f", feelsLikeTemp), &fontSize32, olc::WHITE, &textObjectFeelsLikeValue, positionFeelsLikeValue, spacerFontSize24);
 	else
 		positionTemp = RenderStringSegment("-  -", &fontSize32, olc::GREY, &textObjectFeelsLikeValue, positionFeelsLikeValue + positionDashCorrection32, spacerFontSize24 * 2);
 	RenderString32(degreeUnits.Label(currentUnits), &fontSize24, colorLabelText, &textObjectFeelsLikeUnits, positionTemp);
@@ -1101,7 +1100,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	std::string strWindDirectionText;
 	if (useNumericWindDirection)
 	{
-		RenderStringCentered(std::format("{:.0f}", dequeWindDirections.at(0)), &fontSize40, olc::GREY, &textObjWindDirName, posWindDirectionText);
+		RenderStringCentered(FormatStringFromFloat("%.0f", dequeWindDirections.at(0)), &fontSize40, olc::GREY, &textObjWindDirName, posWindDirectionText);
 		RenderString32(U"\u00B0", &fontSize40, olc::GREY, &textObjWindDirDegreeSymbol, textObjWindDirName.posOffset + olc::vi2d(textObjWindDirName.width + 2, 0));
 	}
 	else
@@ -1183,7 +1182,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 	// Display Wind Speed and speed units label
 	if (windSpeedValue.current.GetValue(currentUnits) != undefinedFloatValue)
-		RenderStringCentered(std::format("{:.0f}", windSpeedValue.current.GetValue(currentUnits)), &fontSize96, olc::WHITE, &windSpeedText, windCircleCenterPoint - olc::vf2d(0, 30));
+		RenderStringCentered(FormatStringFromFloat("%.0f", windSpeedValue.current.GetValue(currentUnits)), &fontSize96, olc::WHITE, &windSpeedText, windCircleCenterPoint - olc::vf2d(0, 30));
 	else
 		RenderStringCentered("- -", &fontSize96, olc::WHITE, &windSpeedText, windCircleCenterPoint - olc::vf2d(0, 2));
 	RenderStringCentered(windSpeedUnits.Label(currentUnits), &fontSize32, colorLabelText, &textObjectWindSpeedUnits, windCircleCenterPoint + olc::vf2d(0, 70));
@@ -1191,12 +1190,12 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	// Display Wind Speed current average and high
 	positionTemp = RenderStringSegment("Avg", &fontSize24, colorLabelText, &textObjectLabelWindSpeedAvg, positionWindSpeedAvgLabel, 9);
 	if (windSpeedValue.average.IsDefined())
-		RenderString(std::format("{:.0f}", windSpeedValue.average.GetValue(currentUnits)), &fontSize24, olc::WHITE, &textObjectWindSpeedAvg, positionTemp);
+		RenderString(FormatStringFromFloat("%.0f", windSpeedValue.average.GetValue(currentUnits)), &fontSize24, olc::WHITE, &textObjectWindSpeedAvg, positionTemp);
 	else
 		RenderString32(U"-  -", &fontSize24, olc::WHITE, &textObjectWindSpeedAvg, positionTemp + positionDashCorrection24);
 	positionTemp = RenderStringSegment("Peak", &fontSize24, colorLabelText, &textObjectWindSpeedPeakLabel, positionWindSpeedPeakLabel, 9);
 	if (windSpeedValue.peak.IsDefined())
-		RenderString(std::format("{:.0f}", windSpeedValue.peak.GetValue(currentUnits)), &fontSize24, olc::WHITE, &textObjectWindSpeedPeakValue, positionTemp);
+		RenderString(FormatStringFromFloat("%.0f", windSpeedValue.peak.GetValue(currentUnits)), &fontSize24, olc::WHITE, &textObjectWindSpeedPeakValue, positionTemp);
 	else
 		RenderString32(U"-  -", &fontSize24, olc::WHITE, &textObjectWindSpeedPeakValue, positionTemp + positionDashCorrection24);
 
@@ -1221,22 +1220,21 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	RenderRainGaugeText();
 
 	if (currentUnits == metricUnits)
-		tempString32 = ConvertedString32(std::format("{:04.1f}", rainfallTotalToday.millimeters));
+		tempString32 = ConvertedString32(FormatStringFromFloat("%04.1f", rainfallTotalToday.millimeters));
 	else
-		tempString32 = ConvertedString32(std::format("{:.2f}", rainfallTotalToday.inches));
+		tempString32 = ConvertedString32(FormatStringFromFloat("%.2f", rainfallTotalToday.inches));
 	RenderString32(U"Today", &fontSize32, olc::GREY, &textObjectRainfallTodayLabel, positionRainfallTodayLabel);
 	RenderString32(tempString32, &fontSize32, olc::WHITE, &textObjectRainfallValue, positionRainfallTodayValue);
 	olc::vi2d unitsLabelOffset = { fontSize32.GetStringBounds(tempString32).size.x + 15, fontSize32.GetStringBounds(tempString32).size.y - fontSize30.GetStringBounds(rainfallUnits.amount.Label(currentUnits)).size.y };
 	RenderString32(rainfallUnits.amount.Label(currentUnits), &fontSize30, colorLabelText, &textObjectRainTodayUnitsLabel, positionRainfallTodayValue + unitsLabelOffset);
 	RenderString32(U"Rate", &fontSize32, olc::GREY, &textObjectRainfallRateLabel, positionRainfallRateLabel);
 	if (currentUnits == metricUnits)
-		tempString32 = ConvertedString32(std::format("{:04.1f}", rainfallData.rainfallRate.millimeters));
+		tempString32 = ConvertedString32(FormatStringFromFloat("%04.1f", rainfallData.rainfallRate.millimeters));
 	else
-		tempString32 = ConvertedString32(std::format("{:.2f}", rainfallData.rainfallRate.inches));
+		tempString32 = ConvertedString32(FormatStringFromFloat("%.2f", rainfallData.rainfallRate.inches));
 	unitsLabelOffset = { fontSize32.GetStringBounds(tempString32).size.x + 15, fontSize32.GetStringBounds(tempString32).size.y - fontSize30.GetStringBounds(rainfallUnits.rate.Label(currentUnits)).size.y };
 	RenderString32(tempString32, &fontSize32, olc::WHITE, &textObjectRainfallRateValue, positionRainfallRateValue);
 	RenderString32(rainfallUnits.rate.Label(currentUnits), &fontSize30, colorLabelText, &textObjectRainfallRateUnits, positionRainfallRateValue + unitsLabelOffset);
-	//RenderStringCentered(std::format("{:.2f} in", rainfallTotalTodayValue), &fontSize32, olc::WHITE, &renderableRainfallValue, positionRainfallValue);
 
 	if (rainEventStartTime != 0)
 	{
@@ -1296,13 +1294,13 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	olc::vf2d positionIndoorTempValue = { positionOutdoorAreaStart.x + (positionOutdoorAreaSize.x * 0.39f), (positionIndoorAreaSize.y * 0.32f) + positionIndoorAreaStart.y };
 	olc::vf2d positionIndoorHumidityValue = { positionOutdoorAreaStart.x + (positionOutdoorAreaSize.x * 0.80f), (positionIndoorAreaSize.y * 0.30f) + positionIndoorAreaStart.y };
 	if (indoorSensor.temperature.current.IsDefined())
-		RenderStringRightJustified(std::format("{:.1f}", indoorSensor.temperature.current.GetValue(currentUnits)), &fontSize56, olc::WHITE, &textObjectIndoorTempValue, positionIndoorTempValue);
+		RenderStringRightJustified(FormatStringFromFloat("%.1f", indoorSensor.temperature.current.GetValue(currentUnits)), &fontSize56, olc::WHITE, &textObjectIndoorTempValue, positionIndoorTempValue);
 	else
 		RenderStringRightJustified("- -", &fontSize56, olc::GREY, &textObjectIndoorTempValue, positionIndoorTempValue + olc::vf2d(-10, positionDashCorrection56.y));
 	RenderString32(degreeUnits.Label(currentUnits), &fontSize24, colorLabelText, &textObjectIndoorTempUnits, positionIndoorTempValue + olc::vf2d(8, 0));
 
 	if (indoorSensor.humidity.current != undefinedIntValue)
-		RenderStringRightJustified(std::format("{:d}", indoorSensor.humidity.current), &fontSize56, olc::WHITE, &textObjectIndoorHumidityValue, positionIndoorHumidityValue);
+		RenderStringRightJustified(FormatStringFromInt("%d", indoorSensor.humidity.current), &fontSize56, olc::WHITE, &textObjectIndoorHumidityValue, positionIndoorHumidityValue);
 	else
 		RenderStringRightJustified("- -", &fontSize56, olc::GREY, &textObjectIndoorHumidityValue, positionIndoorHumidityValue + olc::vf2d(-10, positionDashCorrection56.y));
 	RenderString32(U"%", &fontSize24, colorLabelText, &textObjectIndoorHumidityUnits, positionIndoorHumidityValue + olc::vf2d(8, 0));
@@ -1389,12 +1387,12 @@ void DragonWx::OnTextEntryComplete(const std::string& textResult)
 			if ((setupActiveInputBoxPtr == &inputBoxOutdoorCalTemp) || (setupActiveInputBoxPtr == &inputBoxIndoorCalTemp))
 			{
 				if (!isWhiteSpaceOnly(textResult))
-					setupActiveInputBoxPtr->value.text = std::format("{:.1f}", std::stod(textResult));
+					setupActiveInputBoxPtr->value.text = FormatStringFromFloat("%.1f", std::stod(textResult));
 				else
 					setupActiveInputBoxPtr->value.text = "0.0";
 			}
 			else
-				setupActiveInputBoxPtr->value.text = std::format("{:.4f}", std::stod(textResult));
+				setupActiveInputBoxPtr->value.text = FormatStringFromFloat("%.4f", std::stod(textResult));
 		}
 		catch (...) { inputValueValid = false; }
 	}
@@ -1450,6 +1448,20 @@ bool DragonWx::PasteTextFromClipboard()
 	CloseClipboard();
 	#endif
 	return false;
+}
+
+std::string DragonWx::FormatStringFromFloat(const char* formatString, float inputValue)
+{
+	std::string outputString(16, '\0');
+	std::snprintf(&outputString[0], 16, formatString, inputValue);
+	return outputString;
+}
+
+std::string DragonWx::FormatStringFromInt(const char* formatString, int inputValue)
+{
+	std::string outputString(16, '\0');
+	std::snprintf(&outputString[0], 16, formatString, inputValue);
+	return outputString;
 }
 
 bool DragonWx::isWhiteSpaceOnly(const std::string& inputString)
@@ -1575,7 +1587,7 @@ void DragonWx::RenderHighOrLowValue(std::string labelText, double highLowValue, 
 		else if (labelText == "High")
 			DrawDecal(valuePos - olc::vf2d(fontSize18.GetStringBounds(U"High ").size.x, 0), renderableHighLabel18.Decal());
 		if (highLowValue != undefinedFloatValue)
-			RenderString(std::format("{:.0f}", highLowValue), &fontSize18, olc::WHITE, textValue, valuePos + olc::vf2d(8, 0));
+			RenderString(FormatStringFromFloat("%.0f", highLowValue), &fontSize18, olc::WHITE, textValue, valuePos + olc::vf2d(8, 0));
 		else
 			RenderString32(U"-  -", &fontSize18, olc::WHITE, textValue, valuePos + positionDashCorrection18 + olc::vf2d(8, 0));
 	}
@@ -1587,7 +1599,7 @@ void DragonWx::RenderHighOrLowValue(std::string labelText, double highLowValue, 
 			DrawDecal(valuePos - olc::vf2d(fontSize24.GetStringBounds(U"High ").size.x, 0), renderableHighLabel24.Decal());
 
 		if (highLowValue != undefinedFloatValue)
-			RenderString(std::format("{:.0f}", highLowValue), &fontSize24, olc::WHITE, textValue, valuePos + olc::vf2d(9, 0));
+			RenderString(FormatStringFromFloat("%.0f", highLowValue), &fontSize24, olc::WHITE, textValue, valuePos + olc::vf2d(9, 0));
 		else
 			RenderString32(U"-  -", &fontSize24, olc::WHITE, textValue, valuePos + positionDashCorrection24 + olc::vf2d(9, 0));
 	}
@@ -1603,7 +1615,7 @@ void DragonWx::DrawCircleArc(olc::vf2d startPos, int radius, double startAngle, 
 {
 	for (double angle = startAngle; angle <= endAngle; angle += 0.1)	// Increment in degrees
 	{
-		double rad = angle * (std::numbers::pi / 180.0);				// Convert to radians
+		double rad = angle * (pi / 180.0);				// Convert to radians
 		int x = startPos.x + radius * cos(rad);
 		int y = startPos.y + radius * sin(rad);
 		Draw({ x, y }, olc::RED);
@@ -1746,27 +1758,19 @@ void DragonWx::RenderRainGaugeText()
 	{
 		olc::vi2d extraOffset = olc::vi2d(10, 0);
 		RenderString32(U"00.0 mm", &fontSize18, olc::GREY, &rainGaugeTickMarks[0].textObj, rainGaugeTickMarks[0].pos - extraOffset);
-		RenderString(std::format("{:04.1f} mm", rainGaugeCapacity.GetValue(currentUnits)), &fontSize18, olc::GREY, &rainGaugeTickMarks[rainGaugeMarksTotal].textObj, rainGaugeTickMarks[rainGaugeMarksTotal].pos - extraOffset);
-		RenderString(std::format("{:04.1f} mm", 2 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[2].textObj, rainGaugeTickMarks[2].pos - extraOffset);
-		RenderString(std::format("{:04.1f} mm", 4 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[4].textObj, rainGaugeTickMarks[4].pos - extraOffset);
-		RenderString(std::format("{:04.1f} mm", 6 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[6].textObj, rainGaugeTickMarks[6].pos - extraOffset);
+		RenderString(FormatStringFromFloat("%04.1f mm", rainGaugeCapacity.GetValue(currentUnits)), &fontSize18, olc::GREY, &rainGaugeTickMarks[rainGaugeMarksTotal].textObj, rainGaugeTickMarks[rainGaugeMarksTotal].pos - extraOffset);
+		RenderString(FormatStringFromFloat("%04.1f mm", 2 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[2].textObj, rainGaugeTickMarks[2].pos - extraOffset);
+		RenderString(FormatStringFromFloat("%04.1f mm", 4 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[4].textObj, rainGaugeTickMarks[4].pos - extraOffset);
+		RenderString(FormatStringFromFloat("%04.1f mm", 6 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[6].textObj, rainGaugeTickMarks[6].pos - extraOffset);
 	}
 	else
 	{
 		RenderString32(U"0.00 in", &fontSize18, olc::GREY, &rainGaugeTickMarks[0].textObj, rainGaugeTickMarks[0].pos);
-		RenderString(std::format("{:.2f} in", rainGaugeCapacity.GetValue(currentUnits)), &fontSize18, olc::GREY, &rainGaugeTickMarks[rainGaugeMarksTotal].textObj, rainGaugeTickMarks[rainGaugeMarksTotal].pos);
-		RenderString(std::format("{:.2f} in", 2 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[2].textObj, rainGaugeTickMarks[2].pos);
-		RenderString(std::format("{:.2f} in", 4 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[4].textObj, rainGaugeTickMarks[4].pos);
-		RenderString(std::format("{:.2f} in", 6 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[6].textObj, rainGaugeTickMarks[6].pos);
+		RenderString(FormatStringFromFloat("%.2f in", rainGaugeCapacity.GetValue(currentUnits)), &fontSize18, olc::GREY, &rainGaugeTickMarks[rainGaugeMarksTotal].textObj, rainGaugeTickMarks[rainGaugeMarksTotal].pos);
+		RenderString(FormatStringFromFloat("%.2f in", 2 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[2].textObj, rainGaugeTickMarks[2].pos);
+		RenderString(FormatStringFromFloat("%.2f in", 4 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[4].textObj, rainGaugeTickMarks[4].pos);
+		RenderString(FormatStringFromFloat("%.2f in", 6 * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[6].textObj, rainGaugeTickMarks[6].pos);
 	}
-	/*
-	// Now draw the other unit labels next to their corresponding line markings
-	for (int i = 1; i < rainGaugeMarksTotal; i++)
-	{
-		if ((i % 2) == 0)
-			RenderString(std::format(tempString, i * gaugeSingleTickValue), &fontSize18, olc::GREY, &rainGaugeTickMarks[i].textObj, rainGaugeTickMarks[i].pos);
-	}
-	*/
 }
 
 void DragonWx::DrawUVindexGraph(olc::vf2d startPos, std::u32string strValue32)
