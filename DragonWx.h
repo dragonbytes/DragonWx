@@ -56,6 +56,7 @@ public:
 	//float update_weather_vane(float current, float target, float& velocity, float max_speed, float acceleration, float dt);
 	void MidnightDailyReset();
 	void ResetAllStatistics();
+	bool GenerateWebWxURL(std::string&, std::string&);
 	bool LoadWebWxAssets(wxWebEntry*, olc::Decal*);
 	bool LoadImageFile(olc::Renderable& , std::string);
 

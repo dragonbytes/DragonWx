@@ -373,21 +373,16 @@ bool DragonWx::OnUserCreate()
 	systemTimePrevious = std::time(nullptr);	// Set initial value for previous timestamp
 	std::srand(std::time(nullptr));				// Seed based on current time
 
-	if (webWxEnabled)
+	#ifdef _DEBUG
+	if (appDemoMode)
 	{
-		//strLocationURL = "https://api.open-meteo.com/v1/forecast?latitude=41.8907&longitude=-71.3923&current=temperature_2m,is_day,weather_code,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=3&timeformat=unixtime";
-		strLocationURL = "https://api.open-meteo.com/v1/forecast?latitude=" + webWxLocationLat + "&longitude=" + webWxLocationLon;
-		strLocationURL += "&current=temperature_2m,is_day,weather_code,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=3&timeformat=unixtime";
-		webWxRequested = true;		// Trigger the initial Web Weather request
-		
-		#ifdef _DEBUG
-		if (appDemoMode)
-		{
-			GetWebForecast(strLocationURL, &curlResponseBuffer);
-			webWxNewDataReady = true;
-		}
-		#endif
+		GetWebForecast(strLocationURL, &curlResponseBuffer);
+		webWxNewDataReady = true;
 	}
+	else
+	#endif
+		if (webWxEnabled)
+			GenerateWebWxURL(webWxLocationLat, webWxLocationLon);
 
 	return true;
 }
@@ -503,13 +498,13 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 				if (setupWebWxEnabled != webWxEnabled)
 				{
 					bool webWxPreviousState = webWxEnabled;
-					if (setupWebWxEnabled && !isWhiteSpaceOnly(inputBoxLatitude.value.text) && !isWhiteSpaceOnly(inputBoxLongitude.value.text))
-						webWxEnabled = true;
-					else
-						webWxEnabled = false;
-					
+					webWxEnabled = (setupWebWxEnabled && !isWhiteSpaceOnly(inputBoxLatitude.value.text) && !isWhiteSpaceOnly(inputBoxLongitude.value.text));
 					if (webWxEnabled != webWxPreviousState)
+					{
+						if (webWxEnabled)
+							GenerateWebWxURL(inputBoxLatitude.value.text, inputBoxLongitude.value.text);
 						UpdateAreaBordersSprite();
+					}
 				}
 				outdoorSensor.ID = inputBoxOutdoorID.value.text;
 				indoorSensor.ID = inputBoxIndoorID.value.text;
@@ -2187,6 +2182,18 @@ void DragonWx::ResetAllStatistics()
 	dequeOutdoorHumidity.clear();
 	decalTrendOutdoorTemp = renderableTrendArrowSteady.Decal();
 	decalTrendOutdoorHumidity = renderableTrendArrowSteady.Decal();
+}
+
+bool DragonWx::GenerateWebWxURL(std::string& latitude, std::string& longitude)
+{
+	if (!isWhiteSpaceOnly(latitude) && !isWhiteSpaceOnly(longitude))
+	{
+		strLocationURL = "https://api.open-meteo.com/v1/forecast?latitude=" + latitude + "&longitude=" + longitude;
+		strLocationURL += "&current=temperature_2m,is_day,weather_code,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=3&timeformat=unixtime";
+		webWxRequested = true;		// Trigger the data thread to submit Web Weather request
+		return true;
+	}
+	return false;
 }
 
 bool DragonWx::LoadWebWxAssets(wxWebEntry* wxDataEntry, olc::Decal* decalTarget)
