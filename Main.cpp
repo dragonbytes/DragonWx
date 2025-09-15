@@ -325,13 +325,13 @@ void readWeatherData()
 					{
 						jsonWxTelemetry = nlohmann::json::parse(wxDataMessage);
 						// First make sure this telemetry is coming from our target weather station ID
-						if (jsonWxTelemetry.contains("id"))
+						if (jsonWxTelemetry.contains(jsonParamID))
 						{
-							if (jsonWxTelemetry["id"].dump() == outdoorSensor.ID)
+							if (jsonWxTelemetry[jsonParamID].dump() == outdoorSensor.ID)
 							{
-								if (jsonWxTelemetry.contains("time") && jsonWxTelemetry["time"] != outdoorPacketTimestamp.previous)
+								if (jsonWxTelemetry.contains(jsonParamTime) && jsonWxTelemetry[jsonParamTime] != outdoorPacketTimestamp.previous)
 								{
-									outdoorPacketTimestamp.current = jsonWxTelemetry["time"];
+									outdoorPacketTimestamp.current = jsonWxTelemetry[jsonParamTime];
 
 									if (!outdoorSensor.telemetryStarted)
 									{
@@ -341,60 +341,60 @@ void readWeatherData()
 										outdoorSensor.telemetryStarted = true;
 									}
 
-									if (jsonWxTelemetry.contains("sequence_num"))
+									if (jsonWxTelemetry.contains(jsonParamSequenceNum))
 										//packetSequenceNum = std::stoi(jsonParameterValue);
-										packetSequenceNum = jsonWxTelemetry["sequence_num"].get<int>();
+										packetSequenceNum = jsonWxTelemetry[jsonParamSequenceNum].get<int>();
 									PRINT_DEBUG("Debug: Packet Sequence Number = %u\n", packetSequenceNum);
 
-									if (jsonWxTelemetry.contains("model"))
+									if (jsonWxTelemetry.contains(jsonParamModel))
 									{
-										outdoorSensor.name = jsonWxTelemetry["model"];
+										outdoorSensor.name = jsonWxTelemetry[jsonParamModel];
 										PRINT_DEBUG("%s Outdoor Sensor: %s\n", GetTimestamp().c_str(), outdoorSensor.name.c_str());
 									}
 
-									if (jsonWxTelemetry.contains("channel"))
-										outdoorSensor.channel = jsonWxTelemetry["channel"];
+									if (jsonWxTelemetry.contains(jsonParamChannel))
+										outdoorSensor.channel = jsonWxTelemetry[jsonParamChannel];
 
-									if (jsonWxTelemetry.contains("temperature_C"))
+									if (jsonWxTelemetry.contains(jsonParamTempC))
 									{
-										outdoorSensor.temperature.Update(jsonWxTelemetry["temperature_C"], metricUnits);
+										outdoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempC], metricUnits);
 										CalculateFeelsLikeMetrics();
 										PRINT_DEBUG("%s Outdoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), outdoorSensor.temperature.current.imperial);
 									}
 
-									if (jsonWxTelemetry.contains("temperature_F"))
+									if (jsonWxTelemetry.contains(jsonParamTempF))
 									{
-										outdoorSensor.temperature.Update(jsonWxTelemetry["temperature_F"], imperialUnits);
+										outdoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempF], imperialUnits);
 										CalculateFeelsLikeMetrics();
 										PRINT_DEBUG("%s Outdoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), outdoorSensor.temperature.current.imperial);
 									}
 
-									if (jsonWxTelemetry.contains("humidity"))
+									if (jsonWxTelemetry.contains(jsonParamHumidity))
 									{
-										outdoorSensor.humidity.Update(jsonWxTelemetry["humidity"]);
+										outdoorSensor.humidity.Update(jsonWxTelemetry[jsonParamHumidity]);
 										CalculateFeelsLikeMetrics();
 										PRINT_DEBUG("%s Outdoor Humidity: %u%%\n", GetTimestamp().c_str(), outdoorSensor.humidity.current);
 									}
 
-									if (jsonWxTelemetry.contains("wind_avg_mi_h"))
+									if (jsonWxTelemetry.contains(jsonParamWindAvgMPH))
 									{
-										windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry["wind_avg_mi_h"], imperialUnits);
+										windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry[jsonParamWindAvgMPH], imperialUnits);
 										CalculateFeelsLikeMetrics();
 										PRINT_DEBUG("%s Outdoor Wind Speed: %.0f mph (Average: %.0f mph, Samples = %lu)\n", GetTimestamp().c_str(), windSpeedValue.current.mph, windSpeedValue.average.mph, dequeWindSpeedSamples.size());
 									}
 
-									if (jsonWxTelemetry.contains("wind_avg_km_h"))
+									if (jsonWxTelemetry.contains(jsonParamWindAvgKPH))
 									{
-										windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry["wind_avg_km_h"], metricUnits);
+										windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry[jsonParamWindAvgKPH], metricUnits);
 										CalculateFeelsLikeMetrics();
 										PRINT_DEBUG("%s Outdoor Wind Speed: %.0f mph (Average: %.0f mph, Samples = %lu)\n", GetTimestamp().c_str(), windSpeedValue.current.mph, windSpeedValue.average.mph, dequeWindSpeedSamples.size());
 									}
 
-									if (jsonWxTelemetry.contains("wind_dir_deg"))
+									if (jsonWxTelemetry.contains(jsonParamWindDirDegrees))
 									{
 										if (dequeWindDirections.size() >= 3)
 											dequeWindDirections.pop_back();
-										dequeWindDirections.push_front(jsonWxTelemetry["wind_dir_deg"]);
+										dequeWindDirections.push_front(jsonWxTelemetry[jsonParamWindDirDegrees]);
 										if (dequeWindDirections.size() > 1)
 										{
 											//windAnimationIncrement = true;
@@ -403,9 +403,9 @@ void readWeatherData()
 										PRINT_DEBUG("%s \x1b[1;96mOutdoor Wind Direction: %.0f\xF8\n\x1b[0m", GetTimestamp().c_str(), dequeWindDirections.front());
 									}
 
-									if (jsonWxTelemetry.contains("rain_in"))
+									if (jsonWxTelemetry.contains(jsonParamRainInches))
 									{
-										rainfallSensorValue.current = jsonWxTelemetry["rain_in"];
+										rainfallSensorValue.current = jsonWxTelemetry[jsonParamRainInches];
 										if (rainfallSensorValue.previous != undefinedFloatValue)
 										{
 											float rainfallDeltaValue = 0.0;
@@ -455,33 +455,33 @@ void readWeatherData()
 										PRINT_DEBUG("%s \x1b[1;34mOutdoor Rainfall: %.2f inches\n\x1b[0m", GetTimestamp().c_str(), rainfallTotalToday.inches);
 									}
 
-									if (jsonWxTelemetry.contains("strike_count"))
+									if (jsonWxTelemetry.contains(jsonParamStrikeCount))
 									{
-										if (lightningStrikeCount.Update(jsonWxTelemetry["strike_count"]))
+										if (lightningStrikeCount.Update(jsonWxTelemetry[jsonParamStrikeCount]))
 											PRINT_DEBUG("%s Outdoor Lightning Strike Count: %u\n", GetTimestamp().c_str(), lightningStrikeCount.current);
 									}
 
-									if (jsonWxTelemetry.contains("strike_distance"))
+									if (jsonWxTelemetry.contains(jsonParamStrikeDistance))
 									{
-										if (lightningStrikeDistance.Update(jsonWxTelemetry["strike_distance"]));
+										if (lightningStrikeDistance.Update(jsonWxTelemetry[jsonParamStrikeDistance]));
 											PRINT_DEBUG("%s Outdoor Lightning Strike Distance: %u\n", GetTimestamp().c_str(), lightningStrikeDistance.current);
 									}
 
-									if (jsonWxTelemetry.contains("uv"))
+									if (jsonWxTelemetry.contains(jsonParamUvIndex))
 									{
-										uvIndex.Update(jsonWxTelemetry["uv"]);
+										uvIndex.Update(jsonWxTelemetry[jsonParamUvIndex]);
 										PRINT_DEBUG("%s Outdoor UV Index: %u\n", GetTimestamp().c_str(), uvIndex.current);
 									}
 
-									if (jsonWxTelemetry.contains("lux"))
+									if (jsonWxTelemetry.contains(jsonParamLux))
 									{
-										lightLevelLux.Update(jsonWxTelemetry["lux"]);
+										lightLevelLux.Update(jsonWxTelemetry[jsonParamLux]);
 										PRINT_DEBUG("%s Outdoor Light Level (Lux): %u (Raw JSON: %s)\n", GetTimestamp().c_str(), lightLevelLux.current, jsonWxTelemetry["lux"].dump());
 									}
 
-									if (jsonWxTelemetry.contains("battery_ok"))
+									if (jsonWxTelemetry.contains(jsonParamBatteryOK))
 									{
-										outdoorSensor.batteryStatus = jsonWxTelemetry["battery_ok"];
+										outdoorSensor.batteryStatus = jsonWxTelemetry[jsonParamBatteryOK];
 										PRINT_DEBUG("%s Outdoor Sensor Battery: %s\n", GetTimestamp().c_str(), outdoorSensor.batteryStatus ? "Normal" : "Low");
 									}
 
@@ -491,11 +491,11 @@ void readWeatherData()
 										outdoorSensor.packetCounter = 1;
 								}
 							}
-							else if (jsonWxTelemetry["id"].dump() == indoorSensor.ID)
+							else if (jsonWxTelemetry[jsonParamID].dump() == indoorSensor.ID)
 							{
-								if (jsonWxTelemetry.contains("time") && (jsonWxTelemetry["time"] != indoorPacketTimestamp.previous))
+								if (jsonWxTelemetry.contains(jsonParamTime) && (jsonWxTelemetry[jsonParamTime] != indoorPacketTimestamp.previous))
 								{
-									indoorPacketTimestamp.current = jsonWxTelemetry["time"];
+									indoorPacketTimestamp.current = jsonWxTelemetry[jsonParamTime];
 									if (!indoorSensor.telemetryStarted)
 									{
 										// Now that we know we are receiving live telemetry, do some init stuff
@@ -503,38 +503,38 @@ void readWeatherData()
 										indoorSensor.telemetryStarted = true;
 									}
 
-									if (jsonWxTelemetry.contains("model"))
+									if (jsonWxTelemetry.contains(jsonParamModel))
 									{
 										//indoorSensor.name = jsonParameterValue;
-										indoorSensor.name = jsonWxTelemetry["model"];
+										indoorSensor.name = jsonWxTelemetry[jsonParamModel];
 										PRINT_DEBUG("%s Indoor Sensor: %s\n", GetTimestamp().c_str(), indoorSensor.name.c_str());
 									}
 
-									if (jsonWxTelemetry.contains("channel"))
-										indoorSensor.channel = jsonWxTelemetry["channel"];
+									if (jsonWxTelemetry.contains(jsonParamChannel))
+										indoorSensor.channel = jsonWxTelemetry[jsonParamChannel];
 
-									if (jsonWxTelemetry.contains("temperature_C"))
+									if (jsonWxTelemetry.contains(jsonParamTempC))
 									{
-										indoorSensor.temperature.Update(jsonWxTelemetry["temperature_C"], metricUnits);
+										indoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempC], metricUnits);
 										PRINT_DEBUG("%s Indoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), indoorSensor.temperature.current.imperial);
 									}
 
-									if (jsonWxTelemetry.contains("temperature_F"))
+									if (jsonWxTelemetry.contains(jsonParamTempF))
 									{
-										indoorSensor.temperature.Update(jsonWxTelemetry["temperature_F"], imperialUnits);
+										indoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempF], imperialUnits);
 										PRINT_DEBUG("%s Indoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), indoorSensor.temperature.current.imperial);
 									}
 
-									if (jsonWxTelemetry.contains("humidity"))
+									if (jsonWxTelemetry.contains(jsonParamHumidity))
 									{
-										indoorSensor.humidity.Update(jsonWxTelemetry["humidity"]);
+										indoorSensor.humidity.Update(jsonWxTelemetry[jsonParamHumidity]);
 										PRINT_DEBUG("%s Indoor Humidity: %u%%\n", GetTimestamp().c_str(), indoorSensor.humidity.current);
 									}
 
-									if (jsonWxTelemetry.contains("battery_ok"))
+									if (jsonWxTelemetry.contains(jsonParamBatteryOK))
 									{
 										//indoorSensor.batteryStatus = (jsonParameterValue == "1") ? 1 : 0;
-										indoorSensor.batteryStatus = jsonWxTelemetry["battery_ok"];
+										indoorSensor.batteryStatus = jsonWxTelemetry[jsonParamBatteryOK];
 										PRINT_DEBUG("%s Indoor Sensor Battery: %s\n", GetTimestamp().c_str(), indoorSensor.batteryStatus ? "Normal" : "Low");
 									}
 
@@ -639,6 +639,7 @@ bool LoadConfigFile()
 	std::string inputLine, strParamName, strParamValue;
 	std::ifstream configFile("DragonWx.conf");
 	size_t paramNameEndIndex, paramValueIndex;
+
 	if (!configFile.is_open())
 	{
 		PRINT_DEBUG("Error: Could not open config file.\n");
@@ -660,9 +661,9 @@ bool LoadConfigFile()
 				//std::erase(strParamValue, '\"');	// Strip out quotes
 				StripCharacters(strParamValue, "\r\n\"");
 
-				for (int i = 0; i < configFileParams.size(); i++)
+				for (int i = 0; i < std::max(configFileParams.size(), configFileJsonParams.size()); i++)
 				{
-					if (strParamName == configFileParams[i].keyword)
+					if ((i < configFileParams.size()) && (strParamName == configFileParams[i].keyword))
 					{
 						switch (configFileParams[i].varPtr.index())
 						{
@@ -679,10 +680,12 @@ bool LoadConfigFile()
 							std::get<tempOffsetValuePair*>(configFileParams[i].varPtr)->SetValue(std::stod(strParamValue), metricUnits);
 							break;
 						default:
-							continue;			// Skips the printf() statement below and moves on to next item in while() loop
-							break;
+							break;			// Skips the printf() statement below and moves on to next item in while() loop
 						}
 					}
+					else if ((configFileVersion > 1) && (i < configFileJsonParams.size()) &&
+						(strParamName == configFileJsonParams[i].keyword) && (configFileJsonParams[i].varPtr.index() == 1))
+							*std::get<std::string*>(configFileJsonParams[i].varPtr) = strParamValue;
 				}
 				PRINT_DEBUG("Debug: Loaded config param %s\n", strParamName.c_str());
 			}
@@ -699,20 +702,18 @@ bool SaveConfigFile()
 {
 	std::ofstream configFile("DragonWx.conf");
 	size_t equalsSymbolIndex, paramValueIndex, paramNameEndIndex;
+
 	if (!configFile.is_open())
 	{
 		PRINT_DEBUG("Error: Could not write to config file.\n");
 		return false;
 	}
 
-	configFile << "DragonWx Config File v1.0" << std::endl << std::endl;
+	configFile << "-= DragonWx Config File =-" << std::endl << std::endl;
+	configFileVersion = 2;
 
 	for (int i = 0; i < configFileParams.size(); i++)
 	{
-		if ((configFileParams[i].keyword == "RTL433_PATH") || (configFileParams[i].keyword == "OUTDOOR_SENSOR_ID") || 
-			(configFileParams[i].keyword == "INDOOR_SENSOR_ID") || (configFileParams[i].keyword == "USE_WEB_FORECAST"))
-				configFile << std::endl;		// Add an extra line between relevant sections
-
 		configFile << configFileParams[i].keyword << configFileParams[i].padding;
 
 		switch (configFileParams[i].varPtr.index())
@@ -730,6 +731,18 @@ bool SaveConfigFile()
 			configFile << std::get<tempOffsetValuePair*>(configFileParams[i].varPtr)->GetValue(metricUnits) << std::endl;
 			break;
 		}
+
+		if ((configFileParams[i].keyword == "CONFIG_VERSION") || (configFileParams[i].keyword == "STATION_NAME") ||
+			(configFileParams[i].keyword == "SDR_GAIN") || (configFileParams[i].keyword == "OUTDOOR_HUMIDITY_OFFSET") ||
+			(configFileParams[i].keyword == "INDOOR_HUMIDITY_OFFSET"))
+			configFile << std::endl;		// Add an extra line between relevant sections
+	}
+
+	if (configFileVersion > 1)
+	{
+		configFile << std::endl << "; RTL_433 JSON Keywords" << std::endl << std::endl;
+		for (int i = 0; i < configFileJsonParams.size(); i++)
+			configFile << configFileJsonParams[i].keyword << configFileJsonParams[i].padding << *std::get<std::string*>(configFileJsonParams[i].varPtr) << std::endl;
 	}
 
 	configFile.close();

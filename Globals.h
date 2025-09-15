@@ -13,6 +13,7 @@ inline std::time_t demoAppTime;
 // Application-related constants and variables
 inline std::fstream errorLogFile;
 inline std::string errorLogFilename = "error.log";
+inline int configFileVersion = 1;
 inline char buffer[512], strDateWeekMonthDay[64], strFormattedTime[16], timeFormatCharBuffer[64];
 inline std::string pathToExec, tempString, wxDataMessage, strFullyFormattedDate, strFullyFormattedTime, strRainEventStartTime, strRainEventStopTime;
 inline std::string sdrExtraArguments, sdrGainSetting, sdrAntennaSetting, strWxStationName, webWxLocationLat, webWxLocationLon;                   
@@ -52,6 +53,11 @@ inline int pid_rtl433;
 inline std::thread rtl433_thread;
 inline std::string cliFullCommand;
 inline nlohmann::json jsonWxTelemetry;
+inline std::string jsonParamID = "id", jsonParamTime = "time", jsonParamSequenceNum = "sequence_num", jsonParamModel = "model", jsonParamChannel = "channel";
+inline std::string jsonParamTempC = "temperature_C", jsonParamTempF = "temperature_F", jsonParamHumidity = "humidity", jsonParamWindAvgMPH = "wind_avg_mi_h";
+inline std::string jsonParamWindAvgKPH = "wind_avg_km_h", jsonParamWindDirDegrees = "wind_dir_deg", jsonParamRainInches = "rain_in", jsonParamRainMM = "rain_mm";
+inline std::string jsonParamStrikeCount = "strike_count", jsonParamStrikeDistance = "strike_distance", jsonParamUvIndex = "uv", jsonParamLux = "lux";
+inline std::string jsonParamBatteryOK = "battery_ok";
 
 // Dewpoint-related constants and variables
 inline const float referenceVaporPressure = 6.112f;
@@ -118,15 +124,26 @@ inline double doubleTempDelta;
 inline int intTrendCountUp = 0, intTrendCountSteady = 0, intTrendCountDown = 0;
 inline double sumsBottomEquation, xSum = 0, xSumSquare = 0;
 
-inline std::array<configEntry, 15> configFileParams = {{
-    { "UNITS", "\t\t\t\t\t\t", &currentUnits },                             { "FULLSCREEN", "\t\t\t\t\t", &fullscreenToggle },
-    { "STATION_NAME", "\t\t\t\t", &strWxStationName },                      { "RTL433_PATH", "\t\t\t\t\t", &pathToExec },
-    { "RTL433_PARAMS", "\t\t\t\t", &sdrExtraArguments },                    { "SDR_GAIN", "\t\t\t\t\t", &sdrGainSetting },
-    { "OUTDOOR_SENSOR_ID", "\t\t\t", &outdoorSensor.ID },                   { "OUTDOOR_TEMP_OFFSET_C", "\t\t", &outdoorSensor.temperature.offset },
-    { "OUTDOOR_HUMIDITY_OFFSET", "\t\t", &outdoorSensor.humidity.offset },  { "INDOOR_SENSOR_ID", "\t\t\t", &indoorSensor.ID },
-    { "INDOOR_TEMP_OFFSET_C", "\t\t", &indoorSensor.temperature.offset},    { "INDOOR_HUMIDITY_OFFSET", "\t\t", &indoorSensor.humidity.offset },
-    { "USE_WEB_FORECAST", "\t\t\t", &webWxEnabled },                        { "LOCATION_LAT", "\t\t\t\t", &webWxLocationLat },
-    { "LOCATION_LON", "\t\t\t\t", &webWxLocationLon } }};
+inline std::array<configEntry, 16> configFileParams = {{
+    { "CONFIG_VERSION", "\t\t\t\t", &configFileVersion },                   { "UNITS", "\t\t\t\t\t\t", &currentUnits },
+    { "FULLSCREEN", "\t\t\t\t\t", &fullscreenToggle},                       { "STATION_NAME", "\t\t\t\t", &strWxStationName },
+    { "RTL433_PATH", "\t\t\t\t\t", &pathToExec },                           { "RTL433_PARAMS", "\t\t\t\t", &sdrExtraArguments },
+    { "SDR_GAIN", "\t\t\t\t\t", &sdrGainSetting },                          { "OUTDOOR_SENSOR_ID", "\t\t\t", &outdoorSensor.ID },
+    { "OUTDOOR_TEMP_OFFSET_C", "\t\t", &outdoorSensor.temperature.offset }, { "OUTDOOR_HUMIDITY_OFFSET", "\t\t", &outdoorSensor.humidity.offset },
+    { "INDOOR_SENSOR_ID", "\t\t\t", &indoorSensor.ID },                     { "INDOOR_TEMP_OFFSET_C", "\t\t", &indoorSensor.temperature.offset},
+    { "INDOOR_HUMIDITY_OFFSET", "\t\t", &indoorSensor.humidity.offset },    { "USE_WEB_FORECAST", "\t\t\t", &webWxEnabled },
+    { "LOCATION_LAT", "\t\t\t\t", &webWxLocationLat },                      { "LOCATION_LON", "\t\t\t\t", &webWxLocationLon } }};
+
+inline std::array<configEntry, 18> configFileJsonParams = { {
+    { "JSON_SENSOR_ID", "\t\t\t\t", &jsonParamID },                         { "JSON_TIME", "\t\t\t\t\t", &jsonParamTime },
+    { "JSON_SEQUENCE_NUM", "\t\t\t", &jsonParamSequenceNum },               { "JSON_SENSOR_MODEL", "\t\t\t", &jsonParamModel },
+    { "JSON_SENSOR_CHANNEL", "\t\t\t", &jsonParamChannel },                 { "JSON_TEMP_C", "\t\t\t\t\t", &jsonParamTempC },
+    { "JSON_TEMP_F", "\t\t\t\t\t", &jsonParamTempF },                       { "JSON_HUMIDITY", "\t\t\t\t", &jsonParamHumidity },
+    { "JSON_WIND_AVG_MPH", "\t\t\t", &jsonParamWindAvgMPH },                { "JSON_WIND_AVG_KPH", "\t\t\t", &jsonParamWindAvgKPH },
+    { "JSON_WIND_DIR_DEGREES", "\t\t", &jsonParamWindDirDegrees },          { "JSON_RAIN_INCHES", "\t\t\t", &jsonParamRainInches},
+    { "JSON_RAIN_MM", "\t\t\t\t", &jsonParamRainMM },                       { "JSON_STRIKE_COUNT", "\t\t\t", &jsonParamStrikeCount },
+    { "JSON_STRIKE_DISTANCE", "\t\t", &jsonParamStrikeDistance },           { "JSON_UV_INDEX", "\t\t\t\t", &jsonParamUvIndex },
+    { "JSON_LUX", "\t\t\t\t\t", &jsonParamLux },                            { "JSON_BATTERY_OK", "\t\t\t\t", &jsonParamBatteryOK } }};
 
 // Network-based telemetry variables
 inline bool webWxIsDaylight = true;
