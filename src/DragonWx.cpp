@@ -52,20 +52,21 @@ bool DragonWx::OnUserCreate()
 	olc::Font::init();
 
 	//fontMap.emplace(16, olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16));
+	std::string fontFilePath = assetsDirectory + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf";
 
-	fontSize16 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16);
-	fontSize18 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 18);
-	fontSize20 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 20);
-	fontSize22 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 22);
-	fontSize24 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 24);
-	fontSize26 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 26);
-	fontSize28 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 28);
-	fontSize30 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 30);
-	fontSize32 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 32);
-	fontSize40 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 40);
-	fontSize56 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 56);
-	fontSize72 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 72);
-	fontSize96 = olc::Font("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 96);
+	fontSize16 = olc::Font(fontFilePath, 16);
+	fontSize18 = olc::Font(fontFilePath, 18);
+	fontSize20 = olc::Font(fontFilePath, 20);
+	fontSize22 = olc::Font(fontFilePath, 22);
+	fontSize24 = olc::Font(fontFilePath, 24);
+	fontSize26 = olc::Font(fontFilePath, 26);
+	fontSize28 = olc::Font(fontFilePath, 28);
+	fontSize30 = olc::Font(fontFilePath, 30);
+	fontSize32 = olc::Font(fontFilePath, 32);
+	fontSize40 = olc::Font(fontFilePath, 40);
+	fontSize56 = olc::Font(fontFilePath, 56);
+	fontSize72 = olc::Font(fontFilePath, 72);
+	fontSize96 = olc::Font(fontFilePath, 96);
 
 	spacerFontSize18 = fontSize18.GetStringBounds(U"-").size.x;
 	spacerFontSize24 = fontSize24.GetStringBounds(U"-").size.x;

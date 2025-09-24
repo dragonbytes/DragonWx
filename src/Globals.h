@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Main.h"
+#include <filesystem>
 
 // Debug-related variables
 #ifdef _DEBUG
@@ -12,7 +13,11 @@ inline std::time_t demoAppTime;
 
 // Application-related constants and variables
 inline std::fstream errorLogFile;
-inline std::string errorLogFilename = "error.log";
+#ifdef __APPLE__
+    
+#else
+    
+#endif
 inline int configFileVersion = 1;
 inline char buffer[512], strDateWeekMonthDay[64], strFormattedTime[16], timeFormatCharBuffer[64];
 inline std::string pathToExec, tempString, wxDataMessage, strFullyFormattedDate, strFullyFormattedTime, strRainEventStartTime, strRainEventStopTime;
@@ -36,7 +41,14 @@ inline float tempFloat;
 inline int packetSequenceNum = -1;
 inline float elapsedTimeCounter = 0.0f;
 inline const int rainGaugeMarksTotal = 8;
-inline std::string imagesDirectory = "assets/images/";
+#ifdef __APPLE__
+inline std::filesystem::path userFilesDirPath = std::filesystem::path(std::getenv("$HOME")) / "Library" / "Application Support" / "com.tektodd.dragonwx";
+inline std::string assetsDirectory = "../Resources/";
+#else
+inline std::filesystem::path userFilesDirPath = ".";
+inline std::string assetsDirectory = "assets/";
+#endif
+inline std::string imagesDirectory = assetsDirectory + "images/";
 inline std::array<std::string, 19> imageFileDependencies = { "Background_3840x2160.png", "ThermometerC_44px.png", "ThermometerF_44px.png", "Humidity_40px.png", "Raincloud_32px.png",
                                                  "RainGaugeWater.png", "Signal_0.png", "Signal_1.png", "Signal_2.png", "Signal_3.png", "Signal_4.png", "TrendUp.png", "TrendSteady.png",
                                                  "TrendDown.png", "Gear_24px.png", "Close_24px.png", "Info_24px.png", "TekTodd_Logo_160px.png", "Meteocons/Icons/not-available.png" };

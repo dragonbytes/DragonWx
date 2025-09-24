@@ -38,13 +38,13 @@
 
 int main()
 {
-	// If error log file exists from previous session, delete it
-	if (std::filesystem::exists(errorLogFilename))
+	// Delete any error.log file if it exists from a previous a session
+	if (std::filesystem::exists(userFilesDirPath / "error.log"))
 	{
-		if (std::filesystem::remove(errorLogFilename))
-			PRINT_DEBUG("Debug: %s found and deleted succesfully.\n", errorLogFilename.c_str());
+		if (std::filesystem::remove(userFilesDirPath / "error.log"))
+			PRINT_DEBUG("Debug: %s found and deleted succesfully.\n", errorLogFilePath.c_str());
 		else
-			PRINT_DEBUG("Debug: %s found but could NOT be deleted.\n", errorLogFilename.c_str());
+			PRINT_DEBUG("Debug: %s found but could NOT be deleted.\n", errorLogFilePath.c_str());
 	}
 
 	invalidConfigFileState = !LoadConfigFile();
@@ -128,9 +128,9 @@ olc::vi2d GetSystemResolution()
 bool CheckFileDependencies()
 {
 	bool fileWasMissing = false;
-	if (!std::filesystem::exists("assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
+	if (!std::filesystem::exists(assetsDirectory + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
 	{
-		WriteMsgToErrorLog("Error: Font file not found (assets/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
+		WriteMsgToErrorLog("Error: Font file not found (" + assetsDirectory + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
 		fileWasMissing = true;
 	}
 
@@ -641,7 +641,7 @@ double degreesToRadians(double degrees)
 bool LoadConfigFile()
 {
 	std::string inputLine, strParamName, strParamValue;
-	std::ifstream configFile("DragonWx.conf");
+	std::ifstream configFile(userFilesDirPath / "DragonWx.conf");
 	size_t paramNameEndIndex, paramValueIndex;
 
 	if (!configFile.is_open())
@@ -704,7 +704,7 @@ bool LoadConfigFile()
 
 bool SaveConfigFile()
 {
-	std::ofstream configFile("DragonWx.conf");
+	std::ofstream configFile(userFilesDirPath / "DragonWx.conf");
 	size_t equalsSymbolIndex, paramValueIndex, paramNameEndIndex;
 
 	if (!configFile.is_open())
@@ -914,7 +914,9 @@ void WriteMsgToErrorLog(std::string outputString)
 {
 	if (!errorLogFile.is_open())
 	{
-		errorLogFile.open(errorLogFilename, std::ios::in | std::ios::out | std::ios::trunc);
+		if (!std::filesystem::exists(userFilesDirPath))
+			std::filesystem::create_directory(userFilesDirPath);
+		errorLogFile.open(userFilesDirPath / "error.log", std::ios::in | std::ios::out | std::ios::trunc);
 		errorLogFile << "DragonWx encountered a problem during launch." << std::endl << std::endl;
 	}
 
