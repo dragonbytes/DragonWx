@@ -87,6 +87,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if (WIN32)
     add_executable(${OutputExecutable} WIN32 ${SOURCE_CXX_FILES})
     message(STATUS "Windows executable will be generated")
+elseif (APPLE)
+    add_executable(${OutputExecutable} MACOSX_BUNDLE ${SOURCE_CXX_FILES})
 else ()
     add_executable(${OutputExecutable} ${SOURCE_CXX_FILES})
 endif ()
@@ -318,21 +320,47 @@ endif()
 # Copy assets/ directory target
 ######################################################################
 
-set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/${ASSETS_DIR})
+set(out_data_files "")
 
 file(GLOB_RECURSE src_data_files
-    RELATIVE ${SOURCE_DATA_DIR}/ "${SOURCE_DATA_DIR}/*.*" "${SOURCE_DATA_DIR}/*")
-foreach(fn ${src_data_files})
-    add_custom_command(
-        OUTPUT ${DATA_OUTPUT_DIR}/${fn}
-        COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_DATA_DIR}/${fn} ${DATA_OUTPUT_DIR}/${fn}
-        MAIN_DEPENDENCY ${SOURCE_DATA_DIR}/${fn})
-    list(APPEND out_data_files ${DATA_OUTPUT_DIR}/${fn})
-endforeach()
+    RELATIVE ${SOURCE_DATA_DIR} "${SOURCE_DATA_DIR}/*")
 
-add_custom_target(copy_data DEPENDS ${out_data_files})
+if (APPLE)
+    # macOS: attach files to the bundle
+    set(MAC_ASSET_FILES "")
+    foreach(fn ${src_data_files})
+        set(full_path "${SOURCE_DATA_DIR}/${fn}")
 
-# Copy Asset Files, if not Emscripten
-if (NOT EMSCRIPTEN)
-    add_dependencies(${OutputExecutable} copy_data)
+        # Skip directories, only include files
+        if(NOT IS_DIRECTORY "${full_path}")
+            list(APPEND MAC_ASSET_FILES "${full_path}")
+            # Put file into Resources, preserving subdirectory structure
+            get_filename_component(dir_path "${fn}" DIRECTORY)
+            if(dir_path)
+                set(package_path "Resources/${dir_path}")
+            else()
+                set(package_path "Resources")
+            endif()
+
+            set_source_files_properties("${full_path}" PROPERTIES MACOSX_PACKAGE_LOCATION "${package_path}")
+        endif()
+    endforeach()
+target_sources(${OutputExecutable} PRIVATE ${MAC_ASSET_FILES})
+
+else()
+    # Windows/Linux: copy files to bin/assets/
+    set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/${ASSETS_DIR})
+    foreach(fn ${src_data_files})
+        add_custom_command(
+            OUTPUT ${DATA_OUTPUT_DIR}/${fn}
+            COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_DATA_DIR}/${fn} ${DATA_OUTPUT_DIR}/${fn}
+            MAIN_DEPENDENCY ${SOURCE_DATA_DIR}/${fn})
+        list(APPEND out_data_files ${DATA_OUTPUT_DIR}/${fn})
+    endforeach()
+
+    add_custom_target(copy_data DEPENDS ${out_data_files})
+    if (NOT EMSCRIPTEN)
+        add_dependencies(${OutputExecutable} copy_data)
+    endif()
 endif()
+
