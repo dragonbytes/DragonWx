@@ -206,36 +206,12 @@ bool ClosePipeRTL433()
 	rtl433_pipeIsRunning = !StopProcess(procRTL_433);
 	#elif defined(_WIN32)
 	kill(pid_rtl433, SIGTERM);
-	//waitpid(pid_rtl433, NULL, 0);
+	waitpid(pid_rtl433, NULL, 0);
 	_pclose(pipeRTL_433);
 	#else
-
-
-    if (kill(pid_rtl433, SIGTERM) == 0) {
-        printf("Successfully sent SIGTERM to PID %d\n", pid_rtl433);
-    } else {
-        switch (errno) {
-            case ESRCH:
-                printf("Error: PID %d does not exist\n", pid_rtl433);
-                break;
-            case EPERM:
-                printf("Error: No permission to kill PID %d\n", pid_rtl433);
-                break;
-            case EINVAL:
-                printf("Error: Invalid signal specified\n");
-                break;
-            default:
-                printf("Error: kill() failed: %s\n", strerror(errno));
-                break;
-        }
-    }
-
-    while (1);
-
-
-	//kill(pid_rtl433, SIGTERM);
-	//waitpid(pid_rtl433, NULL, 0);
-	//pclose(pipeRTL_433);
+	kill(pid_rtl433, SIGTERM);
+	waitpid(pid_rtl433, NULL, 0);
+	pclose(pipeRTL_433);
 	#endif
 	return true;
 }
