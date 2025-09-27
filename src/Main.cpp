@@ -36,15 +36,31 @@
 #pragma comment(linker, "/ENTRY:mainCRTStartup")
 #endif
 
-int main()
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
+namespace fs = std::filesystem;
+
+int main(int argc, char* argv[])
 {
+	#ifdef __APPLE__
+		userFilesDirPath = std::string(std::getenv("HOME")) + "/Library/Application Support/DragonWx/";
+		assetsDirPath = fs::canonical(argv[0]).parent_path().parent_path().string() + "/Resources/";
+	#else
+		userFilesDirPath = "./";
+		assetsDirPath = "assets/";
+	#endif
+
+	imagesDirPath = assetsDirPath + "images/";
+
 	// Delete any error.log file if it exists from a previous a session
-	if (std::filesystem::exists(userFilesDirPath / "error.log"))
+	if (fs::exists(userFilesDirPath + errorLogName))
 	{
-		if (std::filesystem::remove(userFilesDirPath / "error.log"))
-			PRINT_DEBUG("Debug: %s found and deleted succesfully.\n", errorLogFilePath.c_str());
+		if (fs::remove(userFilesDirPath + errorLogName))
+			PRINT_DEBUG("Debug: %s found and deleted succesfully.\n", errorLogName.c_str());
 		else
-			PRINT_DEBUG("Debug: %s found but could NOT be deleted.\n", errorLogFilePath.c_str());
+			PRINT_DEBUG("Debug: %s found but could NOT be deleted.\n", errorLogName.c_str());
 	}
 
 	invalidConfigFileState = !LoadConfigFile();
@@ -128,16 +144,16 @@ olc::vi2d GetSystemResolution()
 bool CheckFileDependencies()
 {
 	bool fileWasMissing = false;
-	if (!std::filesystem::exists(assetsDirectory + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
+	if (!fs::exists(assetsDirPath + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf"))
 	{
-		WriteMsgToErrorLog("Error: Font file not found (" + assetsDirectory + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
+		WriteMsgToErrorLog("Error: Font file not found (" + assetsDirPath + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf)");
 		fileWasMissing = true;
 	}
 
 	for (int i = 0; i < imageFileDependencies.size(); i++)
-		if (!std::filesystem::exists(imagesDirectory + imageFileDependencies.at(i)))
+		if (!fs::exists(imagesDirPath + imageFileDependencies.at(i)))
 		{
-			WriteMsgToErrorLog("Error: Image file not found (" + imagesDirectory + imageFileDependencies.at(i) + ")");
+			WriteMsgToErrorLog("Error: Image file not found (" + imagesDirPath + imageFileDependencies.at(i) + ")");
 			fileWasMissing = true;
 		}
 
@@ -190,12 +206,36 @@ bool ClosePipeRTL433()
 	rtl433_pipeIsRunning = !StopProcess(procRTL_433);
 	#elif defined(_WIN32)
 	kill(pid_rtl433, SIGTERM);
-	waitpid(pid_rtl433, NULL, 0);
+	//waitpid(pid_rtl433, NULL, 0);
 	_pclose(pipeRTL_433);
 	#else
-	kill(pid_rtl433, SIGTERM);
-	waitpid(pid_rtl433, NULL, 0);
-	pclose(pipeRTL_433);
+
+
+    if (kill(pid_rtl433, SIGTERM) == 0) {
+        printf("Successfully sent SIGTERM to PID %d\n", pid_rtl433);
+    } else {
+        switch (errno) {
+            case ESRCH:
+                printf("Error: PID %d does not exist\n", pid_rtl433);
+                break;
+            case EPERM:
+                printf("Error: No permission to kill PID %d\n", pid_rtl433);
+                break;
+            case EINVAL:
+                printf("Error: Invalid signal specified\n");
+                break;
+            default:
+                printf("Error: kill() failed: %s\n", strerror(errno));
+                break;
+        }
+    }
+
+    while (1);
+
+
+	//kill(pid_rtl433, SIGTERM);
+	//waitpid(pid_rtl433, NULL, 0);
+	//pclose(pipeRTL_433);
 	#endif
 	return true;
 }
@@ -641,7 +681,7 @@ double degreesToRadians(double degrees)
 bool LoadConfigFile()
 {
 	std::string inputLine, strParamName, strParamValue;
-	std::ifstream configFile(userFilesDirPath / "DragonWx.conf");
+	std::ifstream configFile(userFilesDirPath + configFileName);
 	size_t paramNameEndIndex, paramValueIndex;
 
 	if (!configFile.is_open())
@@ -704,7 +744,7 @@ bool LoadConfigFile()
 
 bool SaveConfigFile()
 {
-	std::ofstream configFile(userFilesDirPath / "DragonWx.conf");
+	std::ofstream configFile(userFilesDirPath + configFileName);
 	size_t equalsSymbolIndex, paramValueIndex, paramNameEndIndex;
 
 	if (!configFile.is_open())
@@ -914,9 +954,9 @@ void WriteMsgToErrorLog(std::string outputString)
 {
 	if (!errorLogFile.is_open())
 	{
-		if (!std::filesystem::exists(userFilesDirPath))
-			std::filesystem::create_directory(userFilesDirPath);
-		errorLogFile.open(userFilesDirPath / "error.log", std::ios::in | std::ios::out | std::ios::trunc);
+		if (!fs::exists(userFilesDirPath))
+			fs::create_directory(userFilesDirPath);
+		errorLogFile.open(userFilesDirPath + errorLogName, std::ios::in | std::ios::out | std::ios::trunc);
 		errorLogFile << "DragonWx encountered a problem during launch." << std::endl << std::endl;
 	}
 

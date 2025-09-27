@@ -52,7 +52,7 @@ bool DragonWx::OnUserCreate()
 	olc::Font::init();
 
 	//fontMap.emplace(16, olc::Font("./Fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf", 16));
-	std::string fontFilePath = assetsDirectory + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf";
+	std::string fontFilePath = assetsDirPath + "fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf";
 
 	fontSize16 = olc::Font(fontFilePath, 16);
 	fontSize18 = olc::Font(fontFilePath, 18);
@@ -72,44 +72,44 @@ bool DragonWx::OnUserCreate()
 	spacerFontSize24 = fontSize24.GetStringBounds(U"-").size.x;
 	spacerFontSize32 = fontSize32.GetStringBounds(U"-").size.x;
 
-	LoadImageFile(renderableBackgroundImage, imagesDirectory + "Background_3840x2160.png");
+	LoadImageFile(renderableBackgroundImage, imagesDirPath + "Background_3840x2160.png");
 	renderableAreaBorders.Create(screenWindowSize.x, screenWindowSize.y);
 	renderableRainGaugeOutline.Create(screenWindowSize.x, screenWindowSize.y);
 	renderableSetupScreen.Create(screenWindowSize.x, screenWindowSize.y);
 	renderableInfoScreen.Create(screenWindowSize.x, screenWindowSize.y);
 
-	LoadImageFile(renderableThermometerIconC, imagesDirectory + "ThermometerC_44px.png");
-	LoadImageFile(renderableThermometerIconF, imagesDirectory + "ThermometerF_44px.png");
+	LoadImageFile(renderableThermometerIconC, imagesDirPath + "ThermometerC_44px.png");
+	LoadImageFile(renderableThermometerIconF, imagesDirPath + "ThermometerF_44px.png");
 
-	LoadImageFile(renderableWaterDropIcon, imagesDirectory + "Humidity_40px.png");
-	LoadImageFile(renderableRainfallIcon, imagesDirectory + "Raincloud_32px.png");
+	LoadImageFile(renderableWaterDropIcon, imagesDirPath + "Humidity_40px.png");
+	LoadImageFile(renderableRainfallIcon, imagesDirPath + "Raincloud_32px.png");
 
 	renderableWindDir.Create(46, 46);
 	centerPointWindDir = renderableWindDir.Sprite()->Size() / olc::vi2d(2, 2);
 
-	LoadImageFile(renderableRainGaugeWater, imagesDirectory + "RainGaugeWater.png");
+	LoadImageFile(renderableRainGaugeWater, imagesDirPath + "RainGaugeWater.png");
 
 	std::string filePathSignalIcon;
 	for (int i = 0; i < 5; i++)
 	{
-		filePathSignalIcon = "assets/images/Signal_" + std::to_string(i) + ".png";
+		filePathSignalIcon = imagesDirPath + "Signal_" + std::to_string(i) + ".png";
 		LoadImageFile(renderableSignalStrength[i], filePathSignalIcon);
 	}
 
 	// Load and setup the sprites/decals for the trending arrows (up, down, and steady)
-	LoadImageFile(renderableTrendArrowUp, imagesDirectory + "TrendUp.png");
-	LoadImageFile(renderableTrendArrowSteady, imagesDirectory + "TrendSteady.png");
-	LoadImageFile(renderableTrendArrowDown, imagesDirectory + "TrendDown.png");
+	LoadImageFile(renderableTrendArrowUp, imagesDirPath + "TrendUp.png");
+	LoadImageFile(renderableTrendArrowSteady, imagesDirPath + "TrendSteady.png");
+	LoadImageFile(renderableTrendArrowDown, imagesDirPath + "TrendDown.png");
 
-	LoadImageFile(renderableSettingsIcon, imagesDirectory + "Gear_24px.png");
-	LoadImageFile(renderableCloseIcon, imagesDirectory + "Close_24px.png");
-	LoadImageFile(renderableInfoIcon, imagesDirectory + "Info_24px.png");
-	LoadImageFile(renderableDragonLogo, imagesDirectory + "TekTodd_Logo_160px.png");
+	LoadImageFile(renderableSettingsIcon, imagesDirPath + "Gear_24px.png");
+	LoadImageFile(renderableCloseIcon, imagesDirPath + "Close_24px.png");
+	LoadImageFile(renderableInfoIcon, imagesDirPath + "Info_24px.png");
+	LoadImageFile(renderableDragonLogo, imagesDirPath + "TekTodd_Logo_160px.png");
 
-	LoadImageFile(renderableWebConditionsImage, imagesDirectory + "Meteocons/Icons/not-available.png");
+	LoadImageFile(renderableWebConditionsImage, imagesDirPath + "Meteocons/Icons/not-available.png");
 
 	for (int i = 0; i < 3; i++)
-		LoadImageFile(renderableWebForecastImages[i], imagesDirectory + "Meteocons/Icons/not-available.png");
+		LoadImageFile(renderableWebForecastImages[i], imagesDirPath + "Meteocons/Icons/not-available.png");
 
 	if (assetsNotFound)
 		return true;
@@ -2199,7 +2199,7 @@ bool DragonWx::GenerateWebWxURL(std::string& latitude, std::string& longitude)
 
 bool DragonWx::LoadWebWxAssets(wxWebEntry* wxDataEntry, olc::Decal* decalTarget)
 {
-	std::string	pathToIcon = "assets/images/Meteocons/Icons/";
+	std::string	pathToIcon = imagesDirPath + "Meteocons/Icons/";
 	if (wxDataEntry->useDaytime)
 	{
 		pathToIcon += wxCodeTableNew[wxDataEntry->code].iconFileDay;
