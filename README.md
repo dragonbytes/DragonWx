@@ -11,7 +11,10 @@ DragonWx is a weather display app that receives live telemetry from nearby Home 
 
 ### What You Will Need
 
-- A computer running either Windows or Linux.
+- A computer running either Windows, Linux or macOS. Builds were tested on the following platforms though should build on many others as well:
+	- Windows 11 (x86 / amd64)
+	- Lubuntu 24.04 (amd64 / arm64)
+	- macOS on Apple Silicon (Sequoia 15.x is minimum required version) 
 - A functional install of [rtl_433](https://github.com/merbanan/rtl_433), which is an open-source SDR data receiving tool that does all the "heavy lifting" in terms of tuning a compatible SDR in to receive the pings from weather sensors, and then decodes them into useful human-readable output.
 - An SDR tuner compatible with rtl_433.<br>
 I've had good luck with the inexpensive [nooelec](https://www.nooelec.com/store/sdr/sdr-receivers/nesdr-smartee-sdr.html) dongles, though any of the RTL-SDR variants should work fine. There are also builds of rtl_433 that include the [SoapySDR](https://github.com/pothosware/SoapySDR/wiki) driver which adds additional support for some of the nicer SDRs like the [SDRplay](https://www.sdrplay.com/products/) receivers.
