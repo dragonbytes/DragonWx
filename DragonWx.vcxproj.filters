@@ -21,6 +21,12 @@
     <ClCompile Include="src\DragonWx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="external\tiny-process-library\process.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\tiny-process-library\process_win.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DragonWx.h">
@@ -42,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\olcPixelGameEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\tiny-process-library\process.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <process.hpp>
 #include "Main.h"
 
 // Debug-related variables
@@ -15,17 +16,17 @@ inline std::fstream errorLogFile;
 inline std::string errorLogName = "error.log";
 inline int configFileVersion = 1;
 inline std::string configFileName = "DragonWx.conf";
-inline char buffer[512], strDateWeekMonthDay[64], strFormattedTime[16], timeFormatCharBuffer[64];
-inline std::string pathToExec, tempString, wxDataMessage, strFullyFormattedDate, strFullyFormattedTime, strRainEventStartTime, strRainEventStopTime;
-inline std::string sdrExtraArguments, sdrGainSetting, sdrAntennaSetting, strWxStationName, webWxLocationLat, webWxLocationLon;                   
+inline std::thread mainWorkerThread;
+inline char strDateWeekMonthDay[64], strFormattedTime[16], timeFormatCharBuffer[64];
+inline std::string pathToExec, tempString, strFullyFormattedDate, strFullyFormattedTime, strRainEventStartTime, strRainEventStopTime;
+inline std::string sdrExtraArguments, sdrGainSetting, sdrAntennaSetting, strWxStationName, webWxLocationLat, webWxLocationLon;       
+inline std::string cliManualExecPath;
 inline std::u32string tempString32;
 inline constexpr bool metricUnits = true;
 inline constexpr bool imperialUnits = false;
 inline bool fullscreenToggle = true;
-inline bool rtl433_failedExecState = false;
-inline bool rtl433_pipeIsRunning = false;
 inline bool appShouldStart = true;
-inline bool rtl433_threadRunning = false;
+inline bool workerThreadRunning = false;
 inline bool activeRainfallEvent = false;
 inline bool currentUnits = false;
 inline bool webWxEnabled = false;
@@ -44,14 +45,12 @@ inline std::array<std::string, 19> imageFileDependencies = { "Background_3840x21
 constexpr double pi = 3.141592653589793;
 
 // RTL_433 CLI and thread-related variables
+inline std::shared_ptr<TinyProcessLib::Process> procRTL_433;
+inline bool rtl433_isRunning = false;
+inline bool rtl433_failedExecState = false;
+inline bool pendingStartRTL433 = false;
+inline std::string wxDataMessageBuffer, wxDataMessage;
 inline unsigned long bufferLength;
-#if defined(_WIN32) && defined(USE_WINDOWS_PIPE)
-inline ProcessHandle procRTL_433;
-#else
-inline FILE* pipeRTL_433;
-inline int pid_rtl433;
-#endif
-inline std::thread rtl433_thread;
 inline std::string cliFullCommand;
 inline nlohmann::json jsonWxTelemetry;
 inline std::string jsonParamID = "id", jsonParamTime = "time", jsonParamSequenceNum = "sequence_num", jsonParamModel = "model", jsonParamChannel = "channel";
@@ -145,6 +144,9 @@ inline std::array<configEntry, 18> configFileJsonParams = { {
     { "JSON_RAIN_MM", "\t\t\t\t", &jsonParamRainMM },                       { "JSON_STRIKE_COUNT", "\t\t\t", &jsonParamStrikeCount },
     { "JSON_STRIKE_DISTANCE", "\t\t", &jsonParamStrikeDistance },           { "JSON_UV_INDEX", "\t\t\t\t", &jsonParamUvIndex },
     { "JSON_LUX", "\t\t\t\t\t", &jsonParamLux },                            { "JSON_BATTERY_OK", "\t\t\t\t", &jsonParamBatteryOK } }};
+
+// Snapshot backup variables (for if the app crashes and/or needs to be started, values like high/low/trend info etc will be preserved upon restart)
+
 
 // Network-based telemetry variables
 inline bool webWxIsDaylight = true;

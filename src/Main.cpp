@@ -68,15 +68,23 @@ int main(int argc, char* argv[])
 
 	assetsNotFound = CheckFileDependencies();
 
-	#ifdef _DEBUG
-	if (!appDemoMode && !invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
-	#else
-	if (!invalidConfigFileState && !assetsNotFound && !StartPipeRTL433())
-	#endif
+	// Check for any command-line flags/parameters when DragonWx was launched
+	if (argc >= 3)
 	{
-		PRINT_DEBUG("Warning: rtl_433 process not started.\n");
-		rtl433_failedExecState = true;
+		std::string strFlag = argv[1];
+
+		for (char& c : strFlag)
+			c = std::tolower(c);
+
+		// -e flag allows user to specify their own raw command-line string to exec when launching rtl_433 instead of config file/app parameters
+		if (strFlag == "-e")
+			cliManualExecPath = argv[2];
 	}
+
+	// Start main worker thread that handles web forecast lookups and parses any pending JSON telemetry
+	mainWorkerThread = std::thread(WorkerThreadHandler);
+	workerThreadRunning = true;
+	pendingStartRTL433 = true;
 
 	while (appShouldStart)
 	{
@@ -93,11 +101,10 @@ int main(int argc, char* argv[])
 
 	PRINT_DEBUG("Info: Pixel Game Engine exited.\n");
 
-	if (rtl433_pipeIsRunning)
-	{
-		ClosePipeRTL433();
-		StopThreadRTL433();
-	}
+	if (rtl433_isRunning)
+		procRTL_433->kill();
+
+	StopWorkerThread();
 
 	if (errorLogFile.is_open())
 		errorLogFile.close();
@@ -160,131 +167,61 @@ bool CheckFileDependencies()
 	return fileWasMissing;
 }
 
-bool StartPipeRTL433()
+void StartPipeRTL433()
 {
-	if (pathToExec.find_first_not_of(" \t\r\n") != std::string::npos)		// This makes sure pathToExec does not ONLY contain whitespace (spaces, tabs, CR, LF only)
+	using namespace TinyProcessLib;
+	int processStatus;
+
+	if (rtl433_isRunning)
 	{
-		cliFullCommand = sdrExtraArguments;
-		if (!sdrGainSetting.empty())
-			cliFullCommand += " -g" + sdrGainSetting;
-		cliFullCommand += " -F json";
+		procRTL_433->kill();
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		rtl433_isRunning = false;
+	}
 
-		#ifdef _WIN32
-		cliFullCommand = "\"" + pathToExec + "\" -v " + cliFullCommand;
-		#ifdef USE_WINDOWS_PIPE
-		rtl433_pipeIsRunning = StartProcess(procRTL_433, cliFullCommand.c_str());
-		#else
-		pipeRTL_433 = _popen(cliFullCommand.c_str(), "r");
-		rtl433_pipeIsRunning = (pipeRTL_433 == nullptr) ? false : true;
-		if (!rtl433_pipeIsRunning)
-			PRINT_DEBUG("Failed to open pipe to rtl_433.\n");
-		#endif
-		#else
-		cliFullCommand = "sh -c 'echo pid $$; exec " + pathToExec + " -v " + cliFullCommand + "'";
-		pipeRTL_433 = popen(cliFullCommand.c_str(), "r");
-		rtl433_pipeIsRunning = (pipeRTL_433 == nullptr) ? false : true;
-		if (!rtl433_pipeIsRunning)
-			PRINT_DEBUG("Failed to open pipe to rtl_433.\n");
-		#endif
-
-		PRINT_DEBUG("Info: CLI Full Command = %s\n", cliFullCommand.c_str());
-
-		if (rtl433_pipeIsRunning)
+	if (!cliManualExecPath.empty())
+		cliFullCommand = cliManualExecPath;
+	else
+	{
+		if (pathToExec.find_first_not_of(" \t\r\n") != std::string::npos)		// This makes sure pathToExec does not ONLY contain whitespace (spaces, tabs, CR, LF only)
 		{
-			rtl433_thread = std::thread(readWeatherData);
-			rtl433_threadRunning = true;
+			cliFullCommand = pathToExec + " -v ";
+			if (!sdrExtraArguments.empty())
+				cliFullCommand += sdrExtraArguments;
+			if (!sdrGainSetting.empty())
+				cliFullCommand += " -g" + sdrGainSetting;
+			cliFullCommand += " -F json";
 		}
-
-		return rtl433_pipeIsRunning;
+		else
+			cliFullCommand.clear();
 	}
-	return false;
-}
 
-bool ClosePipeRTL433()
-{
-	#if defined(_WIN32) && defined(USE_WINDOWS_PIPE)
-	rtl433_pipeIsRunning = !StopProcess(procRTL_433);
-	#elif defined(_WIN32)
-	kill(pid_rtl433, SIGTERM);
-	waitpid(pid_rtl433, NULL, 0);
-	_pclose(pipeRTL_433);
-	#else
-	kill(pid_rtl433, SIGTERM);
-	waitpid(pid_rtl433, NULL, 0);
-	pclose(pipeRTL_433);
-	#endif
-	return true;
-}
-
-bool GetOutputRTL433()
-{
-#if defined(_WIN32) && defined(USE_WINDOWS_PIPE)
-	if (ReadFile(procRTL_433.hStdOutRead, buffer, sizeof(buffer) - 1, &bufferLength, NULL))
+	if (!cliFullCommand.empty())
 	{
-		buffer[bufferLength] = '\0';		// We have to manually add a null-terminator since ReadFile() reads raw bytes, not strings
-		return true;
+		PRINT_DEBUG("Info: CLI Full Command = %s\n", cliFullCommand.c_str());
+		procRTL_433 = std::make_shared<Process>(cliFullCommand, "", CallbackHandlerRTL433, CallbackHandlerRTL433, true);
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
-	return false;
-#else
-	if (fgets(buffer, sizeof(buffer), pipeRTL_433) != buffer)
-		return false;
-	bufferLength = strlen(buffer);
-	return true;
-#endif
+	rtl433_isRunning = !procRTL_433->try_get_exit_status(processStatus);
+	
 }
 
-#ifdef _WIN32
-bool StartProcess(ProcessHandle& proc, const char* cmd)
+void CallbackHandlerRTL433(const char* bytes, size_t n)
 {
-	SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
-
-	// Create pipe for STDOUT
-	HANDLE hStdOutRead, hStdOutWrite;
-	if (!CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0))
-		return false;
-	SetHandleInformation(hStdOutRead, HANDLE_FLAG_INHERIT, 0);
-
-	// Configure process startup info
-	STARTUPINFOA si = { sizeof(STARTUPINFOA) };
-	si.hStdOutput = hStdOutWrite;
-	si.hStdError = hStdOutWrite;
-	si.wShowWindow = SW_HIDE;
-	si.dwFlags |= STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-
-	PROCESS_INFORMATION pi = { 0 };
-
-	// Start the process
-	if (!CreateProcessA(NULL, (LPSTR)cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
-		CloseHandle(hStdOutRead);
-		CloseHandle(hStdOutWrite);
-		return false;
+	wxDataMessageBuffer += std::string(bytes, n);
+	size_t wxDataBufferNextEnd = wxDataMessageBuffer.find_first_of("\r\n");
+	if ((wxDataBufferNextEnd != std::string::npos) && wxDataMessage.empty())
+	{
+		// Extract the complete CR/LF terminated JSON message from the buffer
+		wxDataMessage = wxDataMessageBuffer.substr(0, wxDataBufferNextEnd);
+		// Now trim the complete extracted message from buffer leaving the rest intact
+		wxDataBufferNextEnd = wxDataMessageBuffer.find_first_not_of("\r\n", wxDataBufferNextEnd);
+		if (wxDataBufferNextEnd != std::string::npos)
+			wxDataMessageBuffer = wxDataMessageBuffer.substr(wxDataBufferNextEnd);
+		else
+			wxDataMessageBuffer.clear();		
 	}
-
-	// Close write end of pipe (not needed in parent)
-	CloseHandle(hStdOutWrite);
-
-	// Store process handle and pipe read handle
-	proc.hProcess = pi.hProcess;
-	proc.hStdOutRead = hStdOutRead;
-
-	CloseHandle(pi.hThread);
-	return true;
 }
-
-bool StopProcess(ProcessHandle& proc)
-{
-	if (proc.hProcess) {
-		TerminateProcess(proc.hProcess, 1);
-		CloseHandle(proc.hProcess);
-		proc.hProcess = NULL;
-	}
-	if (proc.hStdOutRead) {
-		CloseHandle(proc.hStdOutRead);
-		proc.hStdOutRead = NULL;
-	}
-	return true;
-}
-#endif
 
 bool ConvertTimeToLocal(std::tm* convertedTimePtr, std::time_t timeToConvert)
 {
@@ -312,9 +249,9 @@ std::string GetTimestamp()
 	return GetFormattedLocalTime("%H:%M:%S", &currentTime);		// Convert to local time and format it into a string to return
 }
 
-void readWeatherData()
+void WorkerThreadHandler()
 {
-	while (rtl433_threadRunning)
+	while (workerThreadRunning)
 	{
 		if (webWxRequested)
 		{
@@ -322,265 +259,258 @@ void readWeatherData()
 			webWxRequested = false;
 		}
 
+		if (pendingStartRTL433)
+		{
+			StartPipeRTL433();
+			pendingStartRTL433 = false;
+		}
+
 		#ifdef _DEBUG
 		if (!appDemoMode)
 		#endif
 		{
-			if (GetOutputRTL433() && (bufferLength > 0))
+			if (!wxDataMessage.empty())
 			{
-				wxDataMessage += buffer;
-				if ((buffer[bufferLength - 1] == 0x0A) || (buffer[bufferLength - 1] == 0x0D))
+				//PRINT_DEBUG("Complete wxDataMessage:\n%s\n", wxDataMessage.c_str());
+				if (nlohmann::json::accept(wxDataMessage))			// Check if our complete message contains valid JSON before trying to parse
 				{
-					#if !defined(_WIN32) || (defined(_WIN32) && !defined(USE_WINDOWS_PIPE))
-					if (wxDataMessage.substr(0, 3) == "pid")
+					jsonWxTelemetry = nlohmann::json::parse(wxDataMessage);
+					// First make sure this telemetry is coming from our target weather station ID
+					if (jsonWxTelemetry.contains(jsonParamID))
 					{
-						std::string strLinuxPID = wxDataMessage.substr(wxDataMessage.find_first_of(' '));
-						pid_rtl433 = std::stoi(strLinuxPID);
-						PRINT_DEBUG("Info: Linux PID for rtl_433 = %u\n", std::stoi(strLinuxPID));
-					}
-					#endif
-
-					//PRINT_DEBUG("Complete wxDataMessage:\n%s\n", wxDataMessage.c_str());
-					if (nlohmann::json::accept(wxDataMessage))			// Check if our complete message contains valid JSON before trying to parse
-					{
-						jsonWxTelemetry = nlohmann::json::parse(wxDataMessage);
-						// First make sure this telemetry is coming from our target weather station ID
-						if (jsonWxTelemetry.contains(jsonParamID))
+						if (jsonWxTelemetry[jsonParamID].dump() == outdoorSensor.ID)
 						{
-							if (jsonWxTelemetry[jsonParamID].dump() == outdoorSensor.ID)
+							if (jsonWxTelemetry.contains(jsonParamTime) && jsonWxTelemetry[jsonParamTime] != outdoorPacketTimestamp.previous)
 							{
-								if (jsonWxTelemetry.contains(jsonParamTime) && jsonWxTelemetry[jsonParamTime] != outdoorPacketTimestamp.previous)
+								outdoorPacketTimestamp.current = jsonWxTelemetry[jsonParamTime];
+
+								if (!outdoorSensor.telemetryStarted)
 								{
-									outdoorPacketTimestamp.current = jsonWxTelemetry[jsonParamTime];
+									// Now that we know we are receiving live telemetry, do some init stuff
+									PRINT_DEBUG("%s Outdoor Sensor: Now receiving telemetry.\n", GetTimestamp().c_str());
+									elapsedTimeCounter = 0.0f;			// To hopefully syncronize the PGE's timing loop with the internal clock on weather station sensor
+									outdoorSensor.telemetryStarted = true;
+								}
 
-									if (!outdoorSensor.telemetryStarted)
+								if (jsonWxTelemetry.contains(jsonParamSequenceNum))
+									//packetSequenceNum = std::stoi(jsonParameterValue);
+									packetSequenceNum = jsonWxTelemetry[jsonParamSequenceNum].get<int>();
+								PRINT_DEBUG("Debug: Packet Sequence Number = %u\n", packetSequenceNum);
+
+								if (jsonWxTelemetry.contains(jsonParamModel))
+								{
+									outdoorSensor.name = jsonWxTelemetry[jsonParamModel];
+									PRINT_DEBUG("%s Outdoor Sensor: %s\n", GetTimestamp().c_str(), outdoorSensor.name.c_str());
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamChannel))
+									outdoorSensor.channel = jsonWxTelemetry[jsonParamChannel];
+
+								if (jsonWxTelemetry.contains(jsonParamTempC))
+								{
+									outdoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempC], metricUnits);
+									CalculateFeelsLikeMetrics();
+									PRINT_DEBUG("%s Outdoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), outdoorSensor.temperature.current.imperial);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamTempF))
+								{
+									outdoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempF], imperialUnits);
+									CalculateFeelsLikeMetrics();
+									PRINT_DEBUG("%s Outdoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), outdoorSensor.temperature.current.imperial);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamHumidity))
+								{
+									outdoorSensor.humidity.Update(jsonWxTelemetry[jsonParamHumidity]);
+									CalculateFeelsLikeMetrics();
+									PRINT_DEBUG("%s Outdoor Humidity: %u%%\n", GetTimestamp().c_str(), outdoorSensor.humidity.current);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamWindAvgMPH))
+								{
+									windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry[jsonParamWindAvgMPH], imperialUnits);
+									CalculateFeelsLikeMetrics();
+									PRINT_DEBUG("%s Outdoor Wind Speed: %.0f mph (Average: %.0f mph, Samples = %lu)\n", GetTimestamp().c_str(), windSpeedValue.current.mph, windSpeedValue.average.mph, dequeWindSpeedSamples.size());
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamWindAvgKPH))
+								{
+									windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry[jsonParamWindAvgKPH], metricUnits);
+									CalculateFeelsLikeMetrics();
+									PRINT_DEBUG("%s Outdoor Wind Speed: %.0f mph (Average: %.0f mph, Samples = %lu)\n", GetTimestamp().c_str(), windSpeedValue.current.mph, windSpeedValue.average.mph, dequeWindSpeedSamples.size());
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamWindDirDegrees))
+								{
+									if (dequeWindDirections.size() >= 3)
+										dequeWindDirections.pop_back();
+									dequeWindDirections.push_front(jsonWxTelemetry[jsonParamWindDirDegrees]);
+									if (dequeWindDirections.size() > 1)
 									{
-										// Now that we know we are receiving live telemetry, do some init stuff
-										PRINT_DEBUG("%s Outdoor Sensor: Now receiving telemetry.\n", GetTimestamp().c_str());
-										elapsedTimeCounter = 0.0f;			// To hopefully syncronize the PGE's timing loop with the internal clock on weather station sensor
-										outdoorSensor.telemetryStarted = true;
+										//windAnimationIncrement = true;
+										windDirAnimatedPosition = dequeWindDirections.at(1);
 									}
+									PRINT_DEBUG("%s \x1b[1;96mOutdoor Wind Direction: %.0f\xF8\n\x1b[0m", GetTimestamp().c_str(), dequeWindDirections.front());
+								}
 
-									if (jsonWxTelemetry.contains(jsonParamSequenceNum))
-										//packetSequenceNum = std::stoi(jsonParameterValue);
-										packetSequenceNum = jsonWxTelemetry[jsonParamSequenceNum].get<int>();
-									PRINT_DEBUG("Debug: Packet Sequence Number = %u\n", packetSequenceNum);
-
-									if (jsonWxTelemetry.contains(jsonParamModel))
+								if (jsonWxTelemetry.contains(jsonParamRainInches))
+								{
+									rainfallSensorValue.current = jsonWxTelemetry[jsonParamRainInches];
+									if (rainfallSensorValue.previous != undefinedFloatValue)
 									{
-										outdoorSensor.name = jsonWxTelemetry[jsonParamModel];
-										PRINT_DEBUG("%s Outdoor Sensor: %s\n", GetTimestamp().c_str(), outdoorSensor.name.c_str());
-									}
+										float rainfallDeltaValue = 0.0;
+										if (rainfallSensorValue.current > rainfallSensorValue.previous)
+											rainfallDeltaValue = (rainfallSensorValue.current - rainfallSensorValue.previous);
+										else if (rainfallSensorValue.current < rainfallSensorValue.previous)
+											rainfallDeltaValue = (5.12 - rainfallSensorValue.previous) + rainfallSensorValue.current;
 
-									if (jsonWxTelemetry.contains(jsonParamChannel))
-										outdoorSensor.channel = jsonWxTelemetry[jsonParamChannel];
-
-									if (jsonWxTelemetry.contains(jsonParamTempC))
-									{
-										outdoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempC], metricUnits);
-										CalculateFeelsLikeMetrics();
-										PRINT_DEBUG("%s Outdoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), outdoorSensor.temperature.current.imperial);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamTempF))
-									{
-										outdoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempF], imperialUnits);
-										CalculateFeelsLikeMetrics();
-										PRINT_DEBUG("%s Outdoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), outdoorSensor.temperature.current.imperial);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamHumidity))
-									{
-										outdoorSensor.humidity.Update(jsonWxTelemetry[jsonParamHumidity]);
-										CalculateFeelsLikeMetrics();
-										PRINT_DEBUG("%s Outdoor Humidity: %u%%\n", GetTimestamp().c_str(), outdoorSensor.humidity.current);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamWindAvgMPH))
-									{
-										windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry[jsonParamWindAvgMPH], imperialUnits);
-										CalculateFeelsLikeMetrics();
-										PRINT_DEBUG("%s Outdoor Wind Speed: %.0f mph (Average: %.0f mph, Samples = %lu)\n", GetTimestamp().c_str(), windSpeedValue.current.mph, windSpeedValue.average.mph, dequeWindSpeedSamples.size());
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamWindAvgKPH))
-									{
-										windSpeedValue.Update(dequeWindSpeedSamples, jsonWxTelemetry[jsonParamWindAvgKPH], metricUnits);
-										CalculateFeelsLikeMetrics();
-										PRINT_DEBUG("%s Outdoor Wind Speed: %.0f mph (Average: %.0f mph, Samples = %lu)\n", GetTimestamp().c_str(), windSpeedValue.current.mph, windSpeedValue.average.mph, dequeWindSpeedSamples.size());
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamWindDirDegrees))
-									{
-										if (dequeWindDirections.size() >= 3)
-											dequeWindDirections.pop_back();
-										dequeWindDirections.push_front(jsonWxTelemetry[jsonParamWindDirDegrees]);
-										if (dequeWindDirections.size() > 1)
+										if (rainfallDeltaValue > 0)
 										{
-											//windAnimationIncrement = true;
-											windDirAnimatedPosition = dequeWindDirections.at(1);
-										}
-										PRINT_DEBUG("%s \x1b[1;96mOutdoor Wind Direction: %.0f\xF8\n\x1b[0m", GetTimestamp().c_str(), dequeWindDirections.front());
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamRainInches))
-									{
-										rainfallSensorValue.current = jsonWxTelemetry[jsonParamRainInches];
-										if (rainfallSensorValue.previous != undefinedFloatValue)
-										{
-											float rainfallDeltaValue = 0.0;
-											if (rainfallSensorValue.current > rainfallSensorValue.previous)
-												rainfallDeltaValue = (rainfallSensorValue.current - rainfallSensorValue.previous);
-											else if (rainfallSensorValue.current < rainfallSensorValue.previous)
-												rainfallDeltaValue = (5.12 - rainfallSensorValue.previous) + rainfallSensorValue.current;
-											
-											if (rainfallDeltaValue > 0)
+											if (!activeRainfallEvent)
 											{
-												if (!activeRainfallEvent)
-												{
-													activeRainfallEvent = true;
-													rainEventStartTime = std::time(nullptr);
-													strRainEventStartTime = GetFormattedLocalTime("%I:%M %p", &rainEventStartTime);
-													if (strRainEventStartTime.at(0) == '0')
-														strRainEventStartTime.erase(0, 1);		// Strip off any leading zeros on the hours value
-													rainfallTotalEvent.SetZero();
-													rainEventStopTime = 0;
-													//rainfallTotalEvent.inches = 0.0;
-												}
-
-												rainfallData.Update(std::time(nullptr), rainfallDeltaValue, imperialUnits);
-												rainEventLastUpdateTime = std::time(nullptr);
-
-												rainfallTotalToday.AddValue(rainfallDeltaValue, imperialUnits);
-												rainfallTotalEvent.AddValue(rainfallDeltaValue, imperialUnits);
-
-												if (rainfallTotalToday.inches >= (rainGaugeCapacity.inches * 0.90f))
-													rainGaugeCapacity.GrowCapacity();
+												activeRainfallEvent = true;
+												rainEventStartTime = std::time(nullptr);
+												strRainEventStartTime = GetFormattedLocalTime("%I:%M %p", &rainEventStartTime);
+												if (strRainEventStartTime.at(0) == '0')
+													strRainEventStartTime.erase(0, 1);		// Strip off any leading zeros on the hours value
+												rainfallTotalEvent.SetZero();
+												rainEventStopTime = 0;
+												//rainfallTotalEvent.inches = 0.0;
 											}
 
-											/*
-											if (dequeRainRateSamples.size() >= 20)
-												dequeRainRateSamples.pop_front();
-											dequeRainRateSamples.push_back(rainfallDeltaValue);
-											// Below code calculates the average rainfall stored in our deque and then scales the average up to fit in a 60 minute time period
-											rainfallRatePerHour.SetValue(std::accumulate(dequeRainRateSamples.begin(), dequeRainRateSamples.end(), 0.0) * (120.0 / dequeRainRateSamples.size()), imperialUnits);
-											PRINT_DEBUG("%s \x1b[1;34mOutdoor Rainfall Rate: %.2f in/hr (Sum = %.2f, Sample Count = %lu)\n\x1b[0m", GetTimestamp().c_str(), rainfallRatePerHour.inches, std::accumulate(dequeRainRateSamples.begin(), dequeRainRateSamples.end(), 0.0), dequeRainRateSamples.size());
-											PRINT_DEBUG("\x1b[1;34mRainfall Rate Samples = ");
-											for (int i = 0; i < dequeRainRateSamples.size(); i++)
-												PRINT_DEBUG("%.2f ", dequeRainRateSamples.at(i));
-											PRINT_DEBUG("\n\x1b[0m");
-											*/
+											rainfallData.Update(std::time(nullptr), rainfallDeltaValue, imperialUnits);
+											rainEventLastUpdateTime = std::time(nullptr);
+
+											rainfallTotalToday.AddValue(rainfallDeltaValue, imperialUnits);
+											rainfallTotalEvent.AddValue(rainfallDeltaValue, imperialUnits);
+
+											if (rainfallTotalToday.inches >= (rainGaugeCapacity.inches * 0.90f))
+												rainGaugeCapacity.GrowCapacity();
 										}
-										rainfallSensorValue.previous = rainfallSensorValue.current;
-										PRINT_DEBUG("%s \x1b[1;34mOutdoor Rainfall: %.2f inches\n\x1b[0m", GetTimestamp().c_str(), rainfallTotalToday.inches);
-									}
 
-									if (jsonWxTelemetry.contains(jsonParamStrikeCount))
-									{
-										if (lightningStrikeCount.Update(jsonWxTelemetry[jsonParamStrikeCount]))
-											PRINT_DEBUG("%s Outdoor Lightning Strike Count: %u\n", GetTimestamp().c_str(), lightningStrikeCount.current);
+										/*
+										if (dequeRainRateSamples.size() >= 20)
+											dequeRainRateSamples.pop_front();
+										dequeRainRateSamples.push_back(rainfallDeltaValue);
+										// Below code calculates the average rainfall stored in our deque and then scales the average up to fit in a 60 minute time period
+										rainfallRatePerHour.SetValue(std::accumulate(dequeRainRateSamples.begin(), dequeRainRateSamples.end(), 0.0) * (120.0 / dequeRainRateSamples.size()), imperialUnits);
+										PRINT_DEBUG("%s \x1b[1;34mOutdoor Rainfall Rate: %.2f in/hr (Sum = %.2f, Sample Count = %lu)\n\x1b[0m", GetTimestamp().c_str(), rainfallRatePerHour.inches, std::accumulate(dequeRainRateSamples.begin(), dequeRainRateSamples.end(), 0.0), dequeRainRateSamples.size());
+										PRINT_DEBUG("\x1b[1;34mRainfall Rate Samples = ");
+										for (int i = 0; i < dequeRainRateSamples.size(); i++)
+											PRINT_DEBUG("%.2f ", dequeRainRateSamples.at(i));
+										PRINT_DEBUG("\n\x1b[0m");
+										*/
 									}
-
-									if (jsonWxTelemetry.contains(jsonParamStrikeDistance))
-									{
-										if (lightningStrikeDistance.Update(jsonWxTelemetry[jsonParamStrikeDistance]));
-											PRINT_DEBUG("%s Outdoor Lightning Strike Distance: %u\n", GetTimestamp().c_str(), lightningStrikeDistance.current);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamUvIndex))
-									{
-										uvIndex.Update(jsonWxTelemetry[jsonParamUvIndex]);
-										PRINT_DEBUG("%s Outdoor UV Index: %u\n", GetTimestamp().c_str(), uvIndex.current);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamLux))
-									{
-										lightLevelLux.Update(jsonWxTelemetry[jsonParamLux]);
-										PRINT_DEBUG("%s Outdoor Light Level (Lux): %u (Raw JSON: %s)\n", GetTimestamp().c_str(), lightLevelLux.current, jsonWxTelemetry["lux"].dump());
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamBatteryOK))
-									{
-										outdoorSensor.batteryStatus = jsonWxTelemetry[jsonParamBatteryOK];
-										PRINT_DEBUG("%s Outdoor Sensor Battery: %s\n", GetTimestamp().c_str(), outdoorSensor.batteryStatus ? "Normal" : "Low");
-									}
-
-									outdoorPacketTimestamp.previous = outdoorPacketTimestamp.current;
-									outdoorSensor.recentlyUpdated = true;
-									if (outdoorSensor.packetCounter < 1)
-										outdoorSensor.packetCounter = 1;
+									rainfallSensorValue.previous = rainfallSensorValue.current;
+									PRINT_DEBUG("%s \x1b[1;34mOutdoor Rainfall: %.2f inches\n\x1b[0m", GetTimestamp().c_str(), rainfallTotalToday.inches);
 								}
-							}
-							else if (jsonWxTelemetry[jsonParamID].dump() == indoorSensor.ID)
-							{
-								if (jsonWxTelemetry.contains(jsonParamTime) && (jsonWxTelemetry[jsonParamTime] != indoorPacketTimestamp.previous))
+
+								if (jsonWxTelemetry.contains(jsonParamStrikeCount))
 								{
-									indoorPacketTimestamp.current = jsonWxTelemetry[jsonParamTime];
-									if (!indoorSensor.telemetryStarted)
-									{
-										// Now that we know we are receiving live telemetry, do some init stuff
-										PRINT_DEBUG("%s Indoor Sensor: Now receiving telemetry.\n", GetTimestamp().c_str());
-										indoorSensor.telemetryStarted = true;
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamModel))
-									{
-										//indoorSensor.name = jsonParameterValue;
-										indoorSensor.name = jsonWxTelemetry[jsonParamModel];
-										PRINT_DEBUG("%s Indoor Sensor: %s\n", GetTimestamp().c_str(), indoorSensor.name.c_str());
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamChannel))
-										indoorSensor.channel = jsonWxTelemetry[jsonParamChannel];
-
-									if (jsonWxTelemetry.contains(jsonParamTempC))
-									{
-										indoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempC], metricUnits);
-										PRINT_DEBUG("%s Indoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), indoorSensor.temperature.current.imperial);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamTempF))
-									{
-										indoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempF], imperialUnits);
-										PRINT_DEBUG("%s Indoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), indoorSensor.temperature.current.imperial);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamHumidity))
-									{
-										indoorSensor.humidity.Update(jsonWxTelemetry[jsonParamHumidity]);
-										PRINT_DEBUG("%s Indoor Humidity: %u%%\n", GetTimestamp().c_str(), indoorSensor.humidity.current);
-									}
-
-									if (jsonWxTelemetry.contains(jsonParamBatteryOK))
-									{
-										//indoorSensor.batteryStatus = (jsonParameterValue == "1") ? 1 : 0;
-										indoorSensor.batteryStatus = jsonWxTelemetry[jsonParamBatteryOK];
-										PRINT_DEBUG("%s Indoor Sensor Battery: %s\n", GetTimestamp().c_str(), indoorSensor.batteryStatus ? "Normal" : "Low");
-									}
-
-									indoorPacketTimestamp.previous = indoorPacketTimestamp.current;
-									indoorSensor.recentlyUpdated = true;
-									if (indoorSensor.packetCounter < 1)
-										indoorSensor.packetCounter = 1;
+									if (lightningStrikeCount.Update(jsonWxTelemetry[jsonParamStrikeCount]))
+										PRINT_DEBUG("%s Outdoor Lightning Strike Count: %u\n", GetTimestamp().c_str(), lightningStrikeCount.current);
 								}
+
+								if (jsonWxTelemetry.contains(jsonParamStrikeDistance))
+								{
+									if (lightningStrikeDistance.Update(jsonWxTelemetry[jsonParamStrikeDistance]));
+									PRINT_DEBUG("%s Outdoor Lightning Strike Distance: %u\n", GetTimestamp().c_str(), lightningStrikeDistance.current);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamUvIndex))
+								{
+									uvIndex.Update(jsonWxTelemetry[jsonParamUvIndex]);
+									PRINT_DEBUG("%s Outdoor UV Index: %u\n", GetTimestamp().c_str(), uvIndex.current);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamLux))
+								{
+									lightLevelLux.Update(jsonWxTelemetry[jsonParamLux]);
+									PRINT_DEBUG("%s Outdoor Light Level (Lux): %u (Raw JSON: %s)\n", GetTimestamp().c_str(), lightLevelLux.current, jsonWxTelemetry["lux"].dump());
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamBatteryOK))
+								{
+									outdoorSensor.batteryStatus = jsonWxTelemetry[jsonParamBatteryOK];
+									PRINT_DEBUG("%s Outdoor Sensor Battery: %s\n", GetTimestamp().c_str(), outdoorSensor.batteryStatus ? "Normal" : "Low");
+								}
+
+								outdoorPacketTimestamp.previous = outdoorPacketTimestamp.current;
+								outdoorSensor.recentlyUpdated = true;
+								if (outdoorSensor.packetCounter < 1)
+									outdoorSensor.packetCounter = 1;
+							}
+						}
+						else if (jsonWxTelemetry[jsonParamID].dump() == indoorSensor.ID)
+						{
+							if (jsonWxTelemetry.contains(jsonParamTime) && (jsonWxTelemetry[jsonParamTime] != indoorPacketTimestamp.previous))
+							{
+								indoorPacketTimestamp.current = jsonWxTelemetry[jsonParamTime];
+								if (!indoorSensor.telemetryStarted)
+								{
+									// Now that we know we are receiving live telemetry, do some init stuff
+									PRINT_DEBUG("%s Indoor Sensor: Now receiving telemetry.\n", GetTimestamp().c_str());
+									indoorSensor.telemetryStarted = true;
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamModel))
+								{
+									//indoorSensor.name = jsonParameterValue;
+									indoorSensor.name = jsonWxTelemetry[jsonParamModel];
+									PRINT_DEBUG("%s Indoor Sensor: %s\n", GetTimestamp().c_str(), indoorSensor.name.c_str());
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamChannel))
+									indoorSensor.channel = jsonWxTelemetry[jsonParamChannel];
+
+								if (jsonWxTelemetry.contains(jsonParamTempC))
+								{
+									indoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempC], metricUnits);
+									PRINT_DEBUG("%s Indoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), indoorSensor.temperature.current.imperial);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamTempF))
+								{
+									indoorSensor.temperature.Update(jsonWxTelemetry[jsonParamTempF], imperialUnits);
+									PRINT_DEBUG("%s Indoor Temperature: %.1f\xF8""F\n", GetTimestamp().c_str(), indoorSensor.temperature.current.imperial);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamHumidity))
+								{
+									indoorSensor.humidity.Update(jsonWxTelemetry[jsonParamHumidity]);
+									PRINT_DEBUG("%s Indoor Humidity: %u%%\n", GetTimestamp().c_str(), indoorSensor.humidity.current);
+								}
+
+								if (jsonWxTelemetry.contains(jsonParamBatteryOK))
+								{
+									//indoorSensor.batteryStatus = (jsonParameterValue == "1") ? 1 : 0;
+									indoorSensor.batteryStatus = jsonWxTelemetry[jsonParamBatteryOK];
+									PRINT_DEBUG("%s Indoor Sensor Battery: %s\n", GetTimestamp().c_str(), indoorSensor.batteryStatus ? "Normal" : "Low");
+								}
+
+								indoorPacketTimestamp.previous = indoorPacketTimestamp.current;
+								indoorSensor.recentlyUpdated = true;
+								if (indoorSensor.packetCounter < 1)
+									indoorSensor.packetCounter = 1;
 							}
 						}
 					}
-					wxDataMessage.clear();
 				}
+				wxDataMessage.clear();
 			}
 		}
 	}
-	PRINT_DEBUG("RTL433 thread is exiting...\n");
+	PRINT_DEBUG("Main worker thread is exiting...\n");
 }
 
-bool StopThreadRTL433()
+bool StopWorkerThread()
 {
-	if (rtl433_threadRunning && rtl433_thread.joinable())
+	if (workerThreadRunning && mainWorkerThread.joinable())
 	{
-		rtl433_threadRunning = false;
-		rtl433_thread.join();
-		PRINT_DEBUG("RTL_433 thread exited.\n");
+		workerThreadRunning = false;
+		mainWorkerThread.join();
+		PRINT_DEBUG("Main worker thread has exited.\n");
 		return true;
 	}
 	else

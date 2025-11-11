@@ -473,16 +473,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			else if (mouseClickedInputBox(&inputBoxSdrExecPath))
 				ActivateInputBox(&inputBoxSdrExecPath);
 			else if (mouseWithinArea(buttonStartStopRTL433.pos, buttonStartStopRTL433.size) && buttonStartStopRTL433.isEnabled)
-			{
-				if (rtl433_pipeIsRunning)
-				{
-					if (ClosePipeRTL433() && StopThreadRTL433())
-						pendingRestartRTL433 = true;
-				}
-				else
-					StartPipeRTL433();
-
-			}
+				pendingStartRTL433 = true;
 			else if (mouseWithinArea(buttonResetStats.pos, buttonResetStats.size))
 			{
 				ResetAllStatistics();
@@ -622,9 +613,6 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 
 	elapsedTimeCounter += fElapsedTime;
 
-	if (pendingRestartRTL433)
-		restartPendingElapsed += fElapsedTime;
-
 	if (elapsedTimeCounter >= 15.0f)
 	{
 		#ifdef _DEBUG
@@ -742,12 +730,14 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		PRINT_DEBUG("%s Indoor Sensor: Consecutive packets = %u\n", GetTimestamp().c_str(), indoorSensor.packetCounter);
 	}
 
+	/*
 	if (restartPendingElapsed >= 5.0f)
 	{
 		StartPipeRTL433();
 		pendingRestartRTL433 = false;
 		restartPendingElapsed = 0.0f;
 	}
+	*/
 
 	// Render blank background image
 	DrawDecal({ 0.0f, 0.0f }, renderableBackgroundImage.Decal(), {0.333f, 0.333f});
@@ -827,13 +817,13 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		RenderButton(&buttonAboutApp);
 		RenderButton(&buttonOk);
 		RenderButton(&buttonCancel);
-
-		if (rtl433_threadRunning)
+		
+		if (rtl433_isRunning && !pendingStartRTL433)
 		{
 			buttonStartStopRTL433.text32 = U"Restart RTL433";
 			buttonStartStopRTL433.isEnabled = true;
 		}
-		else if (pendingRestartRTL433)
+		else if (pendingStartRTL433)
 		{
 			buttonStartStopRTL433.text32 = U"Restarting...";
 			buttonStartStopRTL433.isEnabled = false;

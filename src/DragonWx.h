@@ -78,14 +78,13 @@ public:
 	dialogBox dialogBoxFailedExecCmd, dialogBoxNoValidConfig, dialogBoxInvalidValue, dialogBoxRestartRequired, dialogBoxErrorResolution;
 	dialogBox* dialogBoxForegroundPtr = nullptr;
 
-	float restartPendingElapsed = 0.0f;
 	int minuteTimeCounter = 0;		// This allows me to use single 15 second interval to also handle events once per minute
 	float cursorBlinkElapsedTime = 0.0f;
 	int setupActiveInputBoxID = -1;
 
 	olc::vi2d positionMouseCursor;
 	bool setupUseMetricUnits, setupWebWxEnabled;
-	bool pendingRestartRTL433 = false, mouseWaitingButtonRelease, textCursorBlinkState, useFeelsLikeLabel, useLuxValue, useNumericWindDirection;
+	bool mouseWaitingButtonRelease, textCursorBlinkState, useFeelsLikeLabel, useLuxValue, useNumericWindDirection;
 	olc::Key keyPrevious;
 
 	std::string strClipboardContents;

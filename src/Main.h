@@ -22,15 +22,10 @@
 void StripCharacters(std::string&, const char*);
 olc::vi2d GetSystemResolution();
 bool CheckFileDependencies();
-#ifdef _WIN32
-bool StartProcess(ProcessHandle&, const char*);
-bool StopProcess(ProcessHandle&);
-#endif
-bool StartPipeRTL433();
-bool ClosePipeRTL433();
-bool GetOutputRTL433();
-void readWeatherData();
-bool StopThreadRTL433();
+void WorkerThreadHandler();
+void StartPipeRTL433();
+void CallbackHandlerRTL433(const char* bytes, size_t n);
+bool StopWorkerThread();
 bool ConvertTimeToLocal(std::tm*, std::time_t);
 std::string GetFormattedLocalTime(std::string, std::time_t*);
 std::string GetTimestamp();
