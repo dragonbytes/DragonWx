@@ -79,6 +79,8 @@ set(SOURCE_CXX_SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/${C_CXX_SOURCES_DIR})
 
 # Source Files are Curated Here
 file(GLOB_RECURSE SOURCE_CXX_FILES "${SOURCE_CXX_SRC_DIR}/*.cpp")
+list(APPEND SOURCE_CXX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/external/tiny-process-library/process.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/external/tiny-process-library/process_unix.cpp")
 
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -237,6 +239,9 @@ endif() # Visual Studio / MSVC
 ######################################################################
 if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
     
+    # TinyProcessLib
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/tiny-process-library)
+
     # OpenGL
     set(OpenGL_GL_PREFERENCE LEGACY)
     find_package(OpenGL REQUIRED)
@@ -246,7 +251,6 @@ if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
     # X11
     find_package(X11 REQUIRED)
     target_link_libraries(${OutputExecutable} X11::X11)
-
     include_directories(${X11_INCLUDE_DIRS})
 
     # Threads
