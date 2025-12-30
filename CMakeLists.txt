@@ -101,6 +101,9 @@ endif ()
 
 if(APPLE)
 
+    # TinyProcessLib
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/tiny-process-library)
+
     # OpenGL
     set(OpenGL_GL_PREFERENCE LEGACY)
     find_package(OpenGL REQUIRED)
