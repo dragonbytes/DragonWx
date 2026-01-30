@@ -77,6 +77,7 @@ bool DragonWx::OnUserCreate()
 	renderableRainGaugeOutline.Create(screenWindowSize.x, screenWindowSize.y);
 	renderableSetupScreen.Create(screenWindowSize.x, screenWindowSize.y);
 	renderableInfoScreen.Create(screenWindowSize.x, screenWindowSize.y);
+	renderableDebugScreen.Create(screenWindowSize.x, screenWindowSize.y);
 
 	LoadImageFile(renderableThermometerIconC, imagesDirPath + "ThermometerC_44px.png");
 	LoadImageFile(renderableThermometerIconF, imagesDirPath + "ThermometerF_44px.png");
@@ -314,6 +315,8 @@ bool DragonWx::OnUserCreate()
 	buttonAboutApp = { true, &fontSize24, olc::WHITE, { (buttonResetStats.pos.x + buttonResetStats.size.x + setupButtonPaddingX), setupButtonsBottomY }, { 190, inputBoxHeight }, U"About DragonWx" };
 	positionSetupInfoButton = { buttonOk.pos.x - setupButtonPaddingX - 24, setupButtonsBottomY + 8 };
 
+	buttonDebugToggle = { true, &fontSize24, olc::WHITE, { buttonAboutApp.pos.x + buttonAboutApp.size.x + setupButtonPaddingX, setupButtonsBottomY }, { 110, inputBoxHeight }, U"Debug" };
+
 	titleBoxOutdoorPanel = { U"Outdoor", &fontSize40, areasBorderColor, positionOutdoorAreaStart, positionOutdoorAreaSize, 20, 45 };
 	titleBoxIndoorPanel = { U"Indoor", &fontSize32, areasBorderColor, positionIndoorAreaStart, positionIndoorAreaSize, 20, 45 };
 	titleBoxRainPanel = { U"Rainfall", &fontSize32, areasBorderColor, positionRainAreaStart, positionRainAreaSize, 20, 44 };
@@ -429,6 +432,12 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 			dialogBoxForegroundPtr->showInForeground = false;
 			dialogBoxForegroundPtr = nullptr;
 		}
+		else if (debugPageIsForeground)
+		{
+			SetDrawTarget(previousDrawTarget);
+			debugPageIsForeground = false;
+			settingsPageIsForeground = true;
+		}
 		else if (infoPageIsForeground)
 		{
 			SetDrawTarget(previousDrawTarget);
@@ -474,6 +483,11 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 				ActivateInputBox(&inputBoxSdrExecPath);
 			else if (mouseWithinArea(buttonStartStopRTL433.pos, buttonStartStopRTL433.size) && buttonStartStopRTL433.isEnabled)
 				pendingStartRTL433 = true;
+			else if (mouseWithinArea(buttonDebugToggle.pos, buttonDebugToggle.size))
+			{
+				debugPageIsForeground = true;
+				settingsPageIsForeground = false;
+			}
 			else if (mouseWithinArea(buttonResetStats.pos, buttonResetStats.size))
 			{
 				ResetAllStatistics();
@@ -739,6 +753,49 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	}
 	*/
 
+	if (debugPageIsForeground)
+	{
+		Clear(olc::BLANK);
+		olc::vi2d textPos = { 10, 10 };
+		if ((dequeLiveDebugText.size() > 0))
+		{
+			std::deque<std::string> dequeTemp = dequeLiveDebugText;
+			uint16_t maxChars = 140;
+			for (int i = 0; i < dequeTemp.size(); i++)
+			{
+				if (dequeTemp.at(i).size() >= maxChars)
+				{
+					uint16_t charIndex = 0;
+					while ((dequeTemp.at(i).size() - charIndex) >= maxChars)
+					{
+						DrawString(textPos, dequeTemp.at(i).substr(charIndex, maxChars), olc::WHITE, 1);
+						textPos += olc::vi2d(0, 15);
+						charIndex += maxChars;
+					}
+					if (charIndex < dequeTemp.at(i).size())
+					{
+						DrawString(textPos, dequeTemp.at(i).substr(charIndex), olc::WHITE, 1);
+						textPos += olc::vi2d(0, 20);
+					}
+					textPos += olc::vi2d(0, 10);
+				}
+				else
+				{
+					DrawString(textPos, dequeTemp.at(i), olc::WHITE, 1);
+					textPos += olc::vi2d(0, 20);
+				}
+
+			}
+		}
+		
+
+		//int entryIndex = 0;
+		//for (auto it = dequeLiveDebugText.rbegin(); it != dequeLiveDebugText.rend() && entryIndex < dequeLiveDebugText.size(); ++it, entryIndex++)
+		//	DrawString({ 10, 10 }, *it, olc::WHITE, 2);
+		return true;
+	}
+
+
 	// Render blank background image
 	DrawDecal({ 0.0f, 0.0f }, renderableBackgroundImage.Decal(), {0.333f, 0.333f});
 
@@ -817,6 +874,8 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		RenderButton(&buttonAboutApp);
 		RenderButton(&buttonOk);
 		RenderButton(&buttonCancel);
+
+		RenderButton(&buttonDebugToggle);
 		
 		if (rtl433_isRunning && !pendingStartRTL433)
 		{
@@ -941,9 +1000,11 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 	{
 		//RenderStringRightJustified(fmt::format("{:.1f}", outdoorTempValueF.current), &fontSize96, olc::WHITE, &renderableTempValue, positionOutdoorTempValueF);
 		tempFloat = outdoorSensor.temperature.current.GetValue(currentUnits);
-		tempString = std::to_string(int(tempFloat));
+		float tempIntegerPart;
+		float tempDecimalPart = std::modf(tempFloat, &tempIntegerPart);
+		tempString = std::to_string(int(tempIntegerPart));
 		RenderStringRightJustified(tempString, &fontSize96, olc::WHITE, &textObjectTempValue, positionOutdoorTempValue);
-		tempString32 = ConvertedString32(fmt::format("{:.1f}", tempFloat - int(tempFloat)));
+		tempString32 = ConvertedString32(fmt::format("{:.1f}", std::abs(tempDecimalPart)));
 		tempString32.erase(tempString32.begin());
 		positionTemp = { 9, fontSize96.GetStringBounds(ConvertedString32(tempString)).size.y - fontSize40.GetStringBounds(tempString32).size.y };
 		RenderString32(tempString32, &fontSize40, olc::WHITE, &textObjectTempDecimalValue, positionOutdoorTempValue + positionTemp);

@@ -213,7 +213,7 @@ void CallbackHandlerRTL433(const char* bytes, size_t n)
 	if ((wxDataBufferNextEnd != std::string::npos) && wxDataMessage.empty())
 	{
 		// Extract the complete CR/LF terminated JSON message from the buffer
-		wxDataMessage = wxDataMessageBuffer.substr(0, wxDataBufferNextEnd);
+		wxDataMessage = wxDataMessageBuffer.substr(0, wxDataBufferNextEnd) + "\r\n";
 		// Now trim the complete extracted message from buffer leaving the rest intact
 		wxDataBufferNextEnd = wxDataMessageBuffer.find_first_not_of("\r\n", wxDataBufferNextEnd);
 		if (wxDataBufferNextEnd != std::string::npos)
@@ -271,6 +271,10 @@ void WorkerThreadHandler()
 		{
 			if (!wxDataMessage.empty())
 			{
+				if (dequeLiveDebugText.size() >= 14)
+					dequeLiveDebugText.pop_front();
+				dequeLiveDebugText.push_back(wxDataMessage);
+
 				//PRINT_DEBUG("Complete wxDataMessage:\n%s\n", wxDataMessage.c_str());
 				if (nlohmann::json::accept(wxDataMessage))			// Check if our complete message contains valid JSON before trying to parse
 				{

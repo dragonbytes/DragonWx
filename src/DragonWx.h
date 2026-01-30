@@ -74,6 +74,7 @@ public:
 	inputBoxStruct* setupActiveInputBoxPtr;
 
 	buttonStruct buttonUnitsToggle, buttonForecastOnOff, buttonResetStats, buttonAboutApp, buttonStartStopRTL433, buttonOk, buttonCancel;
+	buttonStruct buttonDebugToggle;
 
 	dialogBox dialogBoxFailedExecCmd, dialogBoxNoValidConfig, dialogBoxInvalidValue, dialogBoxRestartRequired, dialogBoxErrorResolution;
 	dialogBox* dialogBoxForegroundPtr = nullptr;
@@ -103,7 +104,7 @@ public:
 	olc::Sprite* previousDrawTarget;
 
 	olc::Renderable renderableCloseIcon, renderableSettingsIcon, renderableInfoIcon, renderableDragonLogo;
-	olc::Renderable renderableBackgroundImage, renderableAreaBorders, renderableSetupScreen, renderableInfoScreen;
+	olc::Renderable renderableBackgroundImage, renderableAreaBorders, renderableSetupScreen, renderableInfoScreen, renderableDebugScreen;
 	olc::Renderable renderableThermometerIconF, renderableThermometerIconC, renderableWaterDropIcon, renderableRainfallIcon;
 	olc::Renderable renderableWindDir, renderableRainGaugeOutline, renderableRainGaugeWater, renderableSignalStrength[5];
 	olc::Renderable renderableTrendArrowUp, renderableTrendArrowSteady, renderableTrendArrowDown;
