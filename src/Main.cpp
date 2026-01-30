@@ -815,7 +815,8 @@ bool GetWebForecast(std::string url, std::string* curlOutputBufferPtr)
 		{
 			//if (!ConvertTimeToLocal(&webWxDailyForecasts[i].dateTime, jsonWxWebReply["daily"]["time"][i]))
 			//	return false;
-			epochTime = jsonWxWebReply["daily"]["time"][i].get<int>();
+			epochTime = jsonWxWebReply["daily"]["time"][i].get<int64_t>();
+			PRINT_DEBUG("Day %u Epoch Time = %lld\r\n", i, epochTime);
 			webWxDailyForecasts[i].dateTime = *std::localtime(&epochTime);
 			webWxDailyForecasts[i].sunrise = jsonWxWebReply["daily"]["sunrise"][i];
 			webWxDailyForecasts[i].sunset = jsonWxWebReply["daily"]["sunset"][i];
