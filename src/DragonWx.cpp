@@ -1002,7 +1002,7 @@ bool DragonWx::OnUserUpdate(float fElapsedTime)
 		tempFloat = outdoorSensor.temperature.current.GetValue(currentUnits);
 		float tempIntegerPart;
 		float tempDecimalPart = std::modf(tempFloat, &tempIntegerPart);
-		tempString = std::to_string(int(tempIntegerPart));
+		tempString = fmt::format("{:.0f}", tempIntegerPart);
 		RenderStringRightJustified(tempString, &fontSize96, olc::WHITE, &textObjectTempValue, positionOutdoorTempValue);
 		tempString32 = ConvertedString32(fmt::format("{:.1f}", std::abs(tempDecimalPart)));
 		tempString32.erase(tempString32.begin());

@@ -712,7 +712,7 @@ void populateDemoData()
 	webWxLocationLon = "-71.3923";
 
 	outdoorSensor.name = "Acurite Atlas";
-	outdoorSensor.temperature.current.SetValue(67.2f, imperialUnits);
+	outdoorSensor.temperature.current.SetValue(-0.5f, imperialUnits);
 	outdoorSensor.temperature.low.SetValue(53.2f, imperialUnits);
 	outdoorSensor.temperature.high.SetValue(75.7f, imperialUnits);
 	outdoorSensor.humidity.current = 89;
